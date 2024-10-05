@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/*
 public class ServerImpl implements SensorDataConsumer {
     private Map<String, AccelerometerDataProcessor> sensorToFunction = new HashMap<>();
 
@@ -21,3 +22,4 @@ public class ServerImpl implements SensorDataConsumer {
 
 
 }
+ */

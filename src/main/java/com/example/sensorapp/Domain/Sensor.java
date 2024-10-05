@@ -7,6 +7,7 @@ import java.util.Random;
 
 import static java.lang.Thread.sleep;
 
+/*
 public class Sensor implements Runnable {
     private SensorDataConsumer server = new ServerImpl();
 
@@ -35,3 +36,6 @@ public class Sensor implements Runnable {
         }
     }
 }
+
+
+ */

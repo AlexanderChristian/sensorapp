@@ -5,6 +5,6 @@ import java.util.Map;
 public interface DataProcessingFunction {
 
     void process(SensorMessage message);
-    Map<String, Double> getAverageAccelerations();
+    double getAverageAcceleration(String sensorId);
 
 }

@@ -7,11 +7,11 @@ import java.util.Objects;
 public class SensorMessage {
     private String sensorId;
     private Instant createdTime;
-    private List<Object> data;
+    private Object[] data;
     private String dataType;
     private String dataUnit;
 
-    public SensorMessage(String sensorId, Instant createdTime, List<Object> data, String dataType, String dataUnit) {
+    public SensorMessage(String sensorId, Instant createdTime,  Object[] data, String dataType, String dataUnit) {
         this.sensorId = sensorId;
         this.createdTime = createdTime;
         this.data = data;
@@ -35,11 +35,11 @@ public class SensorMessage {
         this.createdTime = createdTime;
     }
 
-    public List<Object> getData() {
+    public Object[] getData() {
         return data;
     }
 
-    public void setData(List<Object> data) {
+    public void setData(Object[] data) {
         this.data = data;
     }
 
