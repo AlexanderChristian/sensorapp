@@ -1,4 +1,6 @@
-package com.example.sensorapp.Domain;
+package com.example.sensorapp.Domain.Consumers;
+
+import com.example.sensorapp.Domain.SensorMessage;
 
 public interface DataProcessingFunction {
 

@@ -1,4 +1,6 @@
-package com.example.sensorapp.Domain;
+package com.example.sensorapp.Domain.Consumers;
+
+import com.example.sensorapp.Domain.SensorMessage;
 
 import java.util.LinkedList;
 import java.util.Map;
@@ -20,7 +22,7 @@ public class AccelerometerDataProcessor implements DataProcessingFunction {
         accelerationWindows.computeIfAbsent(message.getSensorId(), k -> new LinkedList<>()).addLast(acceleration);
 
         LinkedList<Double> window = accelerationWindows.get(message.getSensorId());
-        while (window.size() > 1200) { // 20 messages/second * 60 seconds
+        while (window.size() > 40) { // 20 messages/second * 60 seconds
             window.removeFirst();
         }
     }
@@ -38,7 +40,10 @@ public class AccelerometerDataProcessor implements DataProcessingFunction {
         if (window == null || window.isEmpty()) {
             return 0.0;
         }
+        System.out.println(sensorId+" : "+window);
         return window.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
     }
+
+
 
 }

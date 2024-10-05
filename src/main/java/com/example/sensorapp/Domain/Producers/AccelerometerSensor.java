@@ -1,4 +1,6 @@
-package com.example.sensorapp.Domain;
+package com.example.sensorapp.Domain.Producers;
+
+import com.example.sensorapp.Domain.SensorMessage;
 
 import java.time.Instant;
 import java.util.Random;

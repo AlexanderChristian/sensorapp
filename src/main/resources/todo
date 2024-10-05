@@ -4,3 +4,6 @@
         Have a consumer and a producer interface separated
 
     Make the sensors return 20 messages per second and make them work in parallel
+
+    Unsorted
+        Find the best place to normalize data to m/s^2
