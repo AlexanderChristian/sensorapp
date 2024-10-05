@@ -1,11 +1,11 @@
 package com.example.sensorapp;
 
 import com.example.sensorapp.Domain.Sensor;
-import com.example.sensorapp.Domain.Server;
+import com.example.sensorapp.Domain.SensorDataConsumer;
 import com.example.sensorapp.Domain.ServerImpl;
 
 public class Main {
-    static Server server = new ServerImpl();
+    static SensorDataConsumer server = new ServerImpl();
     static Sensor sensor = new Sensor();
 
 
