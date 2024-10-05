@@ -1,10 +1,9 @@
 package com.example.sensorapp.Domain;
 
-import java.util.Map;
-
 public interface DataProcessingFunction {
 
     void process(SensorMessage message);
+
     double getAverageAcceleration(String sensorId);
 
 }

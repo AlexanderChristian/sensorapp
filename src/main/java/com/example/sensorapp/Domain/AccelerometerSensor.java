@@ -20,5 +20,10 @@ public class AccelerometerSensor implements SensorProducer {
         Object[] data = new Object[]{random.nextDouble(100), random.nextDouble(100), random.nextDouble(100)};
         return new SensorMessage(sensorId, Instant.now(), data, dataType, dataUnit);
     }
+
+    @Override
+    public String getId() {
+        return sensorId;
+    }
 }
 

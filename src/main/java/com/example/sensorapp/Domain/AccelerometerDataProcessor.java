@@ -24,11 +24,12 @@ public class AccelerometerDataProcessor implements DataProcessingFunction {
             window.removeFirst();
         }
     }
+
     private double computeAcceleration(Object[] data) {
         double x = (double) data[0];
         double y = (double) data[1];
         double z = (double) data[2];
-        return Math.sqrt(x*x + y*y + z*z);
+        return Math.sqrt(x * x + y * y + z * z);
     }
 
     @Override

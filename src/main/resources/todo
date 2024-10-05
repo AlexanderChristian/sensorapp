@@ -1,3 +1,6 @@
 2024-10-05
     Create simple consumer/producer for PoC
     Refactor simple/consumer producer
+        Have a consumer and a producer interface separated
+
+    Make the sensors return 20 messages per second and make them work in parallel

@@ -1,7 +1,6 @@
 package com.example.sensorapp.Domain;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Objects;
 
 public class SensorMessage {
@@ -11,7 +10,7 @@ public class SensorMessage {
     private String dataType;
     private String dataUnit;
 
-    public SensorMessage(String sensorId, Instant createdTime,  Object[] data, String dataType, String dataUnit) {
+    public SensorMessage(String sensorId, Instant createdTime, Object[] data, String dataType, String dataUnit) {
         this.sensorId = sensorId;
         this.createdTime = createdTime;
         this.data = data;

@@ -12,6 +12,7 @@ public class Simulator {
     private final Map<String, Queue<SensorMessage>> sensorStreams = new ConcurrentHashMap<>();
     private final DataProcessingFunction dataProcessor = new AccelerometerDataProcessor();
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
+    private final ExecutorService sensorExecutor = Executors.newCachedThreadPool();
     private final Random random = new Random();
     private List<SensorProducer> sensors = new ArrayList<>();
 
@@ -19,8 +20,30 @@ public class Simulator {
     public void run() {
         sensors.add(new AccelerometerSensor("ACC001", ACCELEROMETER, "g-force"));
         sensors.add(new AccelerometerSensor("ACC002", ACCELEROMETER, "m/s^2"));
-        scheduler.scheduleAtFixedRate(this::generateSensorData, 0, 50, TimeUnit.MILLISECONDS);
+        for (SensorProducer sensor : sensors)
+        sensorExecutor.submit(() -> runSensor(sensor));
         scheduler.scheduleAtFixedRate(this::computeAndOutputAverages, 0, 5, TimeUnit.SECONDS);
+    }
+
+    private void runSensor(SensorProducer sensor) {
+        BlockingQueue<SensorMessage> queue = new LinkedBlockingQueue<>();
+        sensorStreams.put(sensor.getId(), queue);
+
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                SensorMessage message = sensor.generateData();
+                queue.offer(message);
+
+                // Only interested in the last minute, can be modified with a batch size or different time if needed
+                while (queue.size() > 20 * 60) {
+                    queue.poll();
+                }
+
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     private void generateSensorData() {
