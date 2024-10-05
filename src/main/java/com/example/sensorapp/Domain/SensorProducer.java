@@ -1,5 +1,7 @@
 package com.example.sensorapp.Domain;
 
+import java.util.List;
+
 public interface SensorProducer {
-    void generateAndSendData();
+    SensorMessage generateData();
 }

@@ -4,13 +4,15 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.example.sensorapp.Domain.Constants.ACCELEROMETER;
+
 public class AccelerometerDataProcessor implements DataProcessingFunction {
     private final Map<String, LinkedList<Double>> accelerationWindows = new ConcurrentHashMap<>();
 
 
     @Override
     public void process(SensorMessage message) {
-        if (!"ACCELEROMETER".equals(message.getDataType())) {
+        if (!ACCELEROMETER.equals(message.getDataType())) {
             return;
         }
 
