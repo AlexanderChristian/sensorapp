@@ -1,6 +1,10 @@
 package com.example.sensorapp;
 
 import com.example.sensorapp.Domain.*;
+import com.example.sensorapp.Domain.Consumers.AccelerometerDataProcessor;
+import com.example.sensorapp.Domain.Consumers.DataProcessingFunction;
+import com.example.sensorapp.Domain.Producers.AccelerometerSensor;
+import com.example.sensorapp.Domain.Producers.SensorProducer;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -9,6 +13,7 @@ import java.util.concurrent.*;
 import static com.example.sensorapp.Domain.Constants.ACCELEROMETER;
 
 public class Simulator {
+    public static final int MESSAGE_BATCH_SIZE = 20;
     private final Map<String, Queue<SensorMessage>> sensorStreams = new ConcurrentHashMap<>();
     private final DataProcessingFunction dataProcessor = new AccelerometerDataProcessor();
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
@@ -19,6 +24,7 @@ public class Simulator {
 
     public void run() {
         sensors.add(new AccelerometerSensor("ACC001", ACCELEROMETER, "g-force"));
+        //Add normalization of data
         sensors.add(new AccelerometerSensor("ACC002", ACCELEROMETER, "m/s^2"));
         for (SensorProducer sensor : sensors)
         sensorExecutor.submit(() -> runSensor(sensor));
@@ -28,16 +34,18 @@ public class Simulator {
     private void runSensor(SensorProducer sensor) {
         BlockingQueue<SensorMessage> queue = new LinkedBlockingQueue<>();
         sensorStreams.put(sensor.getId(), queue);
+        int currentMessageCount = 0;
 
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                SensorMessage message = sensor.generateData();
-                queue.offer(message);
+                while (currentMessageCount < MESSAGE_BATCH_SIZE) {
+                    SensorMessage message = sensor.generateData();
+                    queue.offer(message);
 
-                // Only interested in the last minute, can be modified with a batch size or different time if needed
-                while (queue.size() > 20 * 60) {
-                    queue.poll();
+                    currentMessageCount++;
                 }
+
+
 
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
