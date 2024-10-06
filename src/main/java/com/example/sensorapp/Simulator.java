@@ -4,7 +4,7 @@ import com.example.sensorapp.Domain.Consumers.AccelerometerDataProcessor;
 import com.example.sensorapp.Domain.Consumers.DataProcessingFunction;
 import com.example.sensorapp.Domain.Producers.AccelerometerSensor;
 import com.example.sensorapp.Domain.Producers.SensorProducer;
-import com.example.sensorapp.Domain.SensorMessage;
+import com.example.sensorapp.Domain.Common.SensorMessage;
 
 import java.time.Instant;
 import java.time.LocalDateTime;

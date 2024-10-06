@@ -1,6 +1,6 @@
 package com.example.sensorapp.Domain.Consumers;
 
-import com.example.sensorapp.Domain.SensorMessage;
+import com.example.sensorapp.Domain.Common.SensorMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

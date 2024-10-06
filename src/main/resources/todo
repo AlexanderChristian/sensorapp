@@ -23,3 +23,6 @@
         Task 1 - Add timestamped accelerations for ease of removal. For now UTC AlexanderChristian
         Task 2 - Add tests and try to fix sliding window timing edge cases AlexanderChristian
         Task 3 - Fix timing edge cases by using message creation date instead of now
+        Task 4 - Split into server and client
+        Task 5 - Split into server and client, make client side send 20 requests per second using two separate threads
+        Task 6 - Split into server and client, establish connection
