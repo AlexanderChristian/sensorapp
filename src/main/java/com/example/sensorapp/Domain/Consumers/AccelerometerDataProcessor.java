@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static com.example.sensorapp.Domain.Constants.ACCELEROMETER;
 
-public class AccelerometerDataProcessor implements DataProcessingFunction {
+public class AccelerometerDataProcessor implements DataProcessor {
     private final Map<String, LinkedList<TimestampedAcceleration>> accelerationWindows = new ConcurrentHashMap<>();
     private final long windowDurationMs;
 
@@ -26,9 +26,15 @@ public class AccelerometerDataProcessor implements DataProcessingFunction {
         accelerationWindows.computeIfAbsent(message.getSensorId(), k -> new LinkedList<>()).addLast(new TimestampedAcceleration(acceleration,message.getCreatedTime()));
 
         //Delete older entries
-        Instant startOfTimeWindow = message.getCreatedTime().minusMillis(windowDurationMs);
-        LinkedList<TimestampedAcceleration> window = accelerationWindows.get(message.getSensorId());
-        window.removeIf(timestampedAcceleration -> timestampedAcceleration.timestamp.isBefore(startOfTimeWindow));
+        Instant createdTime = message.getCreatedTime();
+        deleteElementsOutsideWindow(message.getSensorId(), createdTime);
+    }
+
+    private void deleteElementsOutsideWindow(String sensorId, Instant createdTime) {
+        Instant startOfTimeWindow = createdTime.minusMillis(windowDurationMs);
+        System.out.println("Deleting elements older than: " + startOfTimeWindow);
+        LinkedList<TimestampedAcceleration> window = accelerationWindows.get(sensorId);
+        window.removeIf(timestampedAcceleration -> timestampedAcceleration.getTimestamp().isBefore(startOfTimeWindow));
     }
 
     public double computeAcceleration(Object[] data) {
@@ -44,8 +50,8 @@ public class AccelerometerDataProcessor implements DataProcessingFunction {
         if (window == null || window.isEmpty()) {
             return 0.0;
         }
-        System.out.println(sensorId+" : "+window);
-        return window.stream().map(timestampedAcceleration -> timestampedAcceleration.acceleration). mapToDouble(Double::doubleValue).average().orElse(0.0);
+        deleteElementsOutsideWindow(sensorId,window.getLast().getTimestamp());
+        return window.stream().map(timestampedAcceleration -> timestampedAcceleration.getAcceleration()).mapToDouble(Double::doubleValue).average().orElse(0.0);
     }
 
 

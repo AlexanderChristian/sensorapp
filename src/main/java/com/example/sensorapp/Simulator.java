@@ -1,7 +1,7 @@
 package com.example.sensorapp;
 
 import com.example.sensorapp.Domain.Consumers.AccelerometerDataProcessor;
-import com.example.sensorapp.Domain.Consumers.DataProcessingFunction;
+import com.example.sensorapp.Domain.Consumers.DataProcessor;
 import com.example.sensorapp.Domain.Producers.AccelerometerSensor;
 import com.example.sensorapp.Domain.Producers.SensorProducer;
 import com.example.sensorapp.Domain.Common.SensorMessage;
@@ -16,7 +16,7 @@ import static com.example.sensorapp.Domain.Constants.ACCELEROMETER;
 public class Simulator {
     public static final int MESSAGE_BATCH_SIZE = 20;
     private final Map<String, Queue<SensorMessage>> sensorStreams = new ConcurrentHashMap<>();
-    private final DataProcessingFunction dataProcessor = new AccelerometerDataProcessor(60);
+    private final DataProcessor dataProcessor = new AccelerometerDataProcessor(60);
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final ExecutorService sensorExecutor = Executors.newCachedThreadPool();
     private final Random random = new Random();
@@ -55,9 +55,6 @@ public class Simulator {
     }
 
     private void computeAndOutputAverages() {
-        Instant oneMinuteAgo = Instant.now();
-        oneMinuteAgo.minusSeconds(10); // change back to 60
-
         Map<String, Double> averages = new HashMap<>();
 
         for (Map.Entry<String, Queue<SensorMessage>> streamPerSensor : sensorStreams.entrySet()) {

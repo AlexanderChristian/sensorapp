@@ -16,7 +16,7 @@ public class MeasurementController {
 
     @PostMapping("/measurements")
     public void receiveData(@RequestBody List<SensorMessage> bulkMessages){
-        measurementService.processSensorMessages(bulkMessages);
+        measurementService.writeMessagesToQueues(bulkMessages);
     }
 
 }

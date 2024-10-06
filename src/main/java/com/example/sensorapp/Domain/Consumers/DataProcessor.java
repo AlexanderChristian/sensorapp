@@ -2,7 +2,7 @@ package com.example.sensorapp.Domain.Consumers;
 
 import com.example.sensorapp.Domain.Common.SensorMessage;
 
-public interface DataProcessingFunction {
+public interface DataProcessor {
 
     void process(SensorMessage message);
 
