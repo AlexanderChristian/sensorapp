@@ -7,3 +7,14 @@
 
     Unsorted
         Find the best place to normalize data to m/s^2
+
+2024-10-06
+    Add validation for messages coming in
+
+    Split in two services
+
+    Add timestamped doubles for average checking.
+
+    Add normalization strategies
+
+    //We need to add proper polling to not re-send previous messages

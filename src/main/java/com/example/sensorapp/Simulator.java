@@ -1,11 +1,12 @@
 package com.example.sensorapp;
 
-import com.example.sensorapp.Domain.*;
 import com.example.sensorapp.Domain.Consumers.AccelerometerDataProcessor;
 import com.example.sensorapp.Domain.Consumers.DataProcessingFunction;
 import com.example.sensorapp.Domain.Producers.AccelerometerSensor;
 import com.example.sensorapp.Domain.Producers.SensorProducer;
+import com.example.sensorapp.Domain.SensorMessage;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
@@ -16,7 +17,7 @@ public class Simulator {
     public static final int MESSAGE_BATCH_SIZE = 20;
     private final Map<String, Queue<SensorMessage>> sensorStreams = new ConcurrentHashMap<>();
     private final DataProcessingFunction dataProcessor = new AccelerometerDataProcessor();
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final ExecutorService sensorExecutor = Executors.newCachedThreadPool();
     private final Random random = new Random();
     private List<SensorProducer> sensors = new ArrayList<>();
@@ -67,28 +68,35 @@ public class Simulator {
     }
 
     private void computeAndOutputAverages() {
+        Instant oneMinuteAgo = Instant.now();
+        oneMinuteAgo.minusSeconds(10); // change back to 60
 
-        //#TODO Normalize to m/s
         Map<String, Double> averages = new HashMap<>();
 
-        for (Map.Entry<String, Queue<SensorMessage>> entry : sensorStreams.entrySet()) {
-            String sensorId = entry.getKey();
-            Queue<SensorMessage> messages = entry.getValue();
+        for (Map.Entry<String, Queue<SensorMessage>> streamPerSensor : sensorStreams.entrySet()) {
+            Queue<SensorMessage> sensorMessageStream = streamPerSensor.getValue();
+            String sensorId = streamPerSensor.getKey();
 
-            for (SensorMessage message : messages) {
+            //We need to add proper polling to not re-send previous messages
+            for (SensorMessage message : sensorMessageStream) {
                 dataProcessor.process(message);
             }
-
             averages.put(sensorId, dataProcessor.getAverageAcceleration(sensorId));
         }
 
+        outputAverages(averages);
+
+    }
+
+    private static void outputAverages(Map<String, Double> averages) {
         System.out.println("Average Accelerations at " + LocalDateTime.now() + ":");
         for (Map.Entry<String, Double> entry : averages.entrySet()) {
             System.out.printf("Sensor %s: %.2f m/s^2%n", entry.getKey(), entry.getValue());
         }
-        System.out.println();
     }
 
 }
+
+
 
 
