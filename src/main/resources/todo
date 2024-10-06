@@ -28,7 +28,7 @@
         Task 6 - Split into server and client, establish connection
         Task 7 - Link backend code to controller, part 1. Combine writes in service sensorStreams queues.
         Task 8 - Link backend code to controller, part 2. Link sensor streams with scheduled processing logic
-
+        Task 9 - Debugging why stale messages are not deleted if the client stops. Fallback to Instant.now() in sliding window deletion logic.
 
         Dont forget normalization
         And elasticsearch

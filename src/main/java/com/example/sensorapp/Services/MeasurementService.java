@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @Component
 public class MeasurementService {
     private final Map<String, Queue<SensorMessage>> sensorStreams = new ConcurrentHashMap<>();
-    private final DataProcessor dataProcessor = new AccelerometerDataProcessor(6000);
+    private final DataProcessor dataProcessor = new AccelerometerDataProcessor(60000);
 
     private final Map<String, Instant> lastProcessedTimestamps = new ConcurrentHashMap<>();
 

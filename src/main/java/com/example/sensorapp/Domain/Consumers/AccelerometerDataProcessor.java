@@ -6,16 +6,18 @@ import java.time.Instant;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 import static com.example.sensorapp.Domain.Constants.ACCELEROMETER;
 
 public class AccelerometerDataProcessor implements DataProcessor {
-    private final Map<String, LinkedList<TimestampedAcceleration>> accelerationWindows = new ConcurrentHashMap<>();
+    private final Map<String, ConcurrentLinkedDeque<TimestampedAcceleration>> accelerationWindows = new ConcurrentHashMap<>();
     private final long windowDurationMs;
 
-    public AccelerometerDataProcessor(long windowDurationMilliseconds){
+    public AccelerometerDataProcessor(long windowDurationMilliseconds) {
         this.windowDurationMs = windowDurationMilliseconds;
     }
+
     @Override
     public void process(SensorMessage message) {
         if (!ACCELEROMETER.equals(message.getDataType())) {
@@ -23,7 +25,7 @@ public class AccelerometerDataProcessor implements DataProcessor {
         }
 
         double acceleration = computeAcceleration(message.getData());
-        accelerationWindows.computeIfAbsent(message.getSensorId(), k -> new LinkedList<>()).addLast(new TimestampedAcceleration(acceleration,message.getCreatedTime()));
+        accelerationWindows.computeIfAbsent(message.getSensorId(), k -> new ConcurrentLinkedDeque<>()).addLast(new TimestampedAcceleration(acceleration, message.getCreatedTime()));
 
         //Delete older entries
         Instant createdTime = message.getCreatedTime();
@@ -35,8 +37,18 @@ public class AccelerometerDataProcessor implements DataProcessor {
     //A fallback is needed maybe leveraging Instant now.
     private void deleteElementsOutsideWindow(String sensorId, Instant createdTime) {
         Instant startOfTimeWindow = createdTime.minusMillis(windowDurationMs);
+
         System.out.println("Deleting elements older than: " + startOfTimeWindow);
-        LinkedList<TimestampedAcceleration> window = accelerationWindows.get(sensorId);
+        ConcurrentLinkedDeque<TimestampedAcceleration> window = accelerationWindows.get(sensorId);
+
+        Instant fallbackStartOfTimeWindow = Instant.now().minusMillis(windowDurationMs);
+
+        // If the message timestamp is before the fallback window which uses instant as reference, clear the entire window
+        if (createdTime.isBefore(fallbackStartOfTimeWindow)) {
+            System.out.println("Message too old, clearing entire window for sensor: " + sensorId);
+            window.clear();
+        }
+
         window.removeIf(timestampedAcceleration -> {
             boolean shouldRemove = timestampedAcceleration.getTimestamp().isBefore(startOfTimeWindow);
             if (shouldRemove) {
@@ -55,11 +67,11 @@ public class AccelerometerDataProcessor implements DataProcessor {
 
     @Override
     public double getAverageAcceleration(String sensorId) {
-        LinkedList<TimestampedAcceleration> window = accelerationWindows.get(sensorId);
+        ConcurrentLinkedDeque<TimestampedAcceleration> window = accelerationWindows.get(sensorId);
         if (window == null || window.isEmpty()) {
             return 0.0;
         }
-        deleteElementsOutsideWindow(sensorId,window.getLast().getTimestamp());
+        deleteElementsOutsideWindow(sensorId, window.getLast().getTimestamp());
         return window.stream().map(timestampedAcceleration -> timestampedAcceleration.getAcceleration())
                 .mapToDouble(Double::doubleValue)
                 .average()
