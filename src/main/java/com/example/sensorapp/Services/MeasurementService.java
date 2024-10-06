@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @Component
 public class MeasurementService {
     private final Map<String, Queue<SensorMessage>> sensorStreams = new ConcurrentHashMap<>();
-    private final DataProcessingFunction function = new AccelerometerDataProcessor(60000)
+    private final DataProcessingFunction function = new AccelerometerDataProcessor(60000);
     public void processSensorMessages(List<SensorMessage> messages) {
         for (SensorMessage message : messages) {
             String sensorId = message.getSensorId();
