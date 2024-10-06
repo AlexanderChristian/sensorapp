@@ -30,11 +30,20 @@ public class AccelerometerDataProcessor implements DataProcessor {
         deleteElementsOutsideWindow(message.getSensorId(), createdTime);
     }
 
+
+    //I found that a major downside of this approach is the fact that once messages stop coming, you wont be able to delete what remains inside
+    //A fallback is needed maybe leveraging Instant now.
     private void deleteElementsOutsideWindow(String sensorId, Instant createdTime) {
         Instant startOfTimeWindow = createdTime.minusMillis(windowDurationMs);
         System.out.println("Deleting elements older than: " + startOfTimeWindow);
         LinkedList<TimestampedAcceleration> window = accelerationWindows.get(sensorId);
-        window.removeIf(timestampedAcceleration -> timestampedAcceleration.getTimestamp().isBefore(startOfTimeWindow));
+        window.removeIf(timestampedAcceleration -> {
+            boolean shouldRemove = timestampedAcceleration.getTimestamp().isBefore(startOfTimeWindow);
+            if (shouldRemove) {
+                System.out.println("Removing: " + timestampedAcceleration.getTimestamp());
+            }
+            return shouldRemove;
+        });
     }
 
     public double computeAcceleration(Object[] data) {
@@ -51,7 +60,10 @@ public class AccelerometerDataProcessor implements DataProcessor {
             return 0.0;
         }
         deleteElementsOutsideWindow(sensorId,window.getLast().getTimestamp());
-        return window.stream().map(timestampedAcceleration -> timestampedAcceleration.getAcceleration()).mapToDouble(Double::doubleValue).average().orElse(0.0);
+        return window.stream().map(timestampedAcceleration -> timestampedAcceleration.getAcceleration())
+                .mapToDouble(Double::doubleValue)
+                .average()
+                .orElse(0.0);
     }
 
 

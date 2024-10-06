@@ -27,3 +27,10 @@
         Task 5 - Split into server and client, make client side send 20 requests per second using two separate threads
         Task 6 - Split into server and client, establish connection
         Task 7 - Link backend code to controller, part 1. Combine writes in service sensorStreams queues.
+        Task 8 - Link backend code to controller, part 2. Link sensor streams with scheduled processing logic
+
+
+        Dont forget normalization
+        And elasticsearch
+        And logging
+        and DI

@@ -47,6 +47,7 @@ public class MeasurementService {
         }
 
         outputAverages(averages);
+        averages.clear();
     }
 
     private void processNewMessages(String sensorId, Queue<SensorMessage> sensorMessageStream) {
