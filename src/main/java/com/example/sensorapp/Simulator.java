@@ -16,7 +16,7 @@ import static com.example.sensorapp.Domain.Constants.ACCELEROMETER;
 public class Simulator {
     public static final int MESSAGE_BATCH_SIZE = 20;
     private final Map<String, Queue<SensorMessage>> sensorStreams = new ConcurrentHashMap<>();
-    private final DataProcessingFunction dataProcessor = new AccelerometerDataProcessor();
+    private final DataProcessingFunction dataProcessor = new AccelerometerDataProcessor(60);
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final ExecutorService sensorExecutor = Executors.newCachedThreadPool();
     private final Random random = new Random();

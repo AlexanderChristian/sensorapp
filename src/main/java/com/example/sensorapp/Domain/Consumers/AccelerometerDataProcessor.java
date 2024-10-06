@@ -13,7 +13,11 @@ import static com.example.sensorapp.Domain.Constants.ACCELEROMETER;
 
 public class AccelerometerDataProcessor implements DataProcessingFunction {
     private final Map<String, LinkedList<TimestampedAcceleration>> accelerationWindows = new ConcurrentHashMap<>();
+    private final long windowDurationMs;
 
+    public AccelerometerDataProcessor(long windowDurationMilliseconds){
+        this.windowDurationMs = windowDurationMilliseconds;
+    }
     @Override
     public void process(SensorMessage message) {
         if (!ACCELEROMETER.equals(message.getDataType())) {
@@ -24,12 +28,12 @@ public class AccelerometerDataProcessor implements DataProcessingFunction {
         accelerationWindows.computeIfAbsent(message.getSensorId(), k -> new LinkedList<>()).addLast(new TimestampedAcceleration(acceleration,message.getCreatedTime()));
 
         //Delete older entries
-        Instant oneMinuteAgo = Instant.now(Clock.systemUTC()).minusSeconds(1);
+        Instant startOfTimeWindow = Instant.now(Clock.systemUTC()).minusMillis(windowDurationMs);
         LinkedList<TimestampedAcceleration> window = accelerationWindows.get(message.getSensorId());
-        window.removeIf(timestampedAcceleration -> timestampedAcceleration.timestamp.isBefore(oneMinuteAgo));
+        window.removeIf(timestampedAcceleration -> timestampedAcceleration.timestamp.isBefore(startOfTimeWindow));
     }
 
-    private double computeAcceleration(Object[] data) {
+    public double computeAcceleration(Object[] data) {
         double x = (double) data[0];
         double y = (double) data[1];
         double z = (double) data[2];
