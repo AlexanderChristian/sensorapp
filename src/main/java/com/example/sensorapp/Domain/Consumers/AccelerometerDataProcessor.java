@@ -28,7 +28,7 @@ public class AccelerometerDataProcessor implements DataProcessingFunction {
         accelerationWindows.computeIfAbsent(message.getSensorId(), k -> new LinkedList<>()).addLast(new TimestampedAcceleration(acceleration,message.getCreatedTime()));
 
         //Delete older entries
-        Instant startOfTimeWindow = Instant.now(Clock.systemUTC()).minusMillis(windowDurationMs);
+        Instant startOfTimeWindow = message.getCreatedTime().minusMillis(windowDurationMs);
         LinkedList<TimestampedAcceleration> window = accelerationWindows.get(message.getSensorId());
         window.removeIf(timestampedAcceleration -> timestampedAcceleration.timestamp.isBefore(startOfTimeWindow));
     }

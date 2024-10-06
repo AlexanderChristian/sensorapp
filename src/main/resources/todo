@@ -18,3 +18,8 @@
     Add normalization strategies
 
     //We need to add proper polling to not re-send previous messages
+
+    Done
+        Task 1 - Add timestamped accelerations for ease of removal. For now UTC AlexanderChristian
+        Task 2 - Add tests and try to fix sliding window timing edge cases AlexanderChristian
+        Task 3 - Fix timing edge cases by using message creation date instead of now
