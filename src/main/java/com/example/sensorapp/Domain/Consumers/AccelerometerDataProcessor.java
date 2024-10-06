@@ -2,6 +2,8 @@ package com.example.sensorapp.Domain.Consumers;
 
 import com.example.sensorapp.Domain.SensorMessage;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,7 +24,8 @@ public class AccelerometerDataProcessor implements DataProcessingFunction {
         accelerationWindows.computeIfAbsent(message.getSensorId(), k -> new LinkedList<>()).addLast(acceleration);
 
         LinkedList<Double> window = accelerationWindows.get(message.getSensorId());
-        while (window.size() > 40) { // 20 messages/second * 60 seconds
+        //#TODO Do Validation at the top level to not maintain useless messages
+        while (window.size() > 1200) { // 20 messages/second * 60 seconds
             window.removeFirst();
         }
     }
@@ -44,6 +47,13 @@ public class AccelerometerDataProcessor implements DataProcessingFunction {
         return window.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
     }
 
+    /*
+    private void removeOldMessages(String sensorId) {
+        Instant now = Instant.now();
+        LinkedList<Double> valuesAssociatedWithSensor = accelerationWindows.get(sensorId);
+        valuesAssociatedWithSensor.removeIf(message -> Duration.between(message.getCreatedTime(), now).toMillis() > WINDOW_DURATION_MS);
+    }
 
+     */
 
 }

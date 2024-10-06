@@ -26,8 +26,9 @@ public class Simulator {
         sensors.add(new AccelerometerSensor("ACC001", ACCELEROMETER, "g-force"));
         //Add normalization of data
         sensors.add(new AccelerometerSensor("ACC002", ACCELEROMETER, "m/s^2"));
-        for (SensorProducer sensor : sensors)
-        sensorExecutor.submit(() -> runSensor(sensor));
+        for (SensorProducer sensor : sensors) {
+            sensorExecutor.submit(() -> runSensor(sensor));
+        }
         scheduler.scheduleAtFixedRate(this::computeAndOutputAverages, 0, 5, TimeUnit.SECONDS);
     }
 
@@ -38,15 +39,13 @@ public class Simulator {
 
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                while (currentMessageCount < MESSAGE_BATCH_SIZE) {
+                while (currentMessageCount < 20) {
                     SensorMessage message = sensor.generateData();
                     queue.offer(message);
 
                     currentMessageCount++;
                 }
-
-
-
+                currentMessageCount = 0;
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -68,6 +67,8 @@ public class Simulator {
     }
 
     private void computeAndOutputAverages() {
+
+        //#TODO Normalize to m/s
         Map<String, Double> averages = new HashMap<>();
 
         for (Map.Entry<String, Queue<SensorMessage>> entry : sensorStreams.entrySet()) {
