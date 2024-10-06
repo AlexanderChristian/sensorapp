@@ -26,3 +26,4 @@
         Task 4 - Split into server and client
         Task 5 - Split into server and client, make client side send 20 requests per second using two separate threads
         Task 6 - Split into server and client, establish connection
+        Task 7 - Link backend code to controller, part 1. Combine writes in service sensorStreams queues.

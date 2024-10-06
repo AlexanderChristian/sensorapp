@@ -1,25 +1,22 @@
 package com.example.sensorapp.Controllers;
 
 import com.example.sensorapp.Domain.Common.SensorMessage;
-import org.springframework.stereotype.Controller;
+import com.example.sensorapp.Services.MeasurementService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RequestMapping("/api")
 @RestController
-public class MeasurementsController {
+public class MeasurementController {
 
-    @GetMapping("/hello")
-    public void hello(){
-        System.out.println("Hello");
-    }
+    @Autowired
+    private MeasurementService measurementService;
 
     @PostMapping("/measurements")
     public void receiveData(@RequestBody List<SensorMessage> bulkMessages){
-        System.out.println(bulkMessages);
+        measurementService.processSensorMessages(bulkMessages);
     }
-
-
 
 }

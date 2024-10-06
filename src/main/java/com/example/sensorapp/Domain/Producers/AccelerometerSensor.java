@@ -4,7 +4,7 @@ import com.example.sensorapp.Domain.Common.SensorMessage;
 
 import java.time.Instant;
 import java.util.Random;
-
+//not needed anymore on this part
 public class AccelerometerSensor implements SensorProducer {
     private final String sensorId;
     private final String dataType;

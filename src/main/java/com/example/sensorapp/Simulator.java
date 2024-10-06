@@ -34,7 +34,7 @@ public class Simulator {
     }
 
     private void runSensor(SensorProducer sensor) {
-        BlockingQueue<SensorMessage> queue = new LinkedBlockingQueue<>();
+        BlockingQueue<SensorMessage> queue = new LinkedBlockingQueue<>(1200);
         sensorStreams.put(sensor.getId(), queue);
         int currentMessageCount = 0;
 
@@ -50,19 +50,6 @@ public class Simulator {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-            }
-        }
-    }
-
-    private void generateSensorData() {
-        for (SensorProducer sensor : sensors) {
-            SensorMessage sensorMessage = sensor.generateData();
-
-            sensorStreams.computeIfAbsent(sensorMessage.getSensorId(), k -> new ConcurrentLinkedQueue<>()).offer(sensorMessage);
-
-            Queue<SensorMessage> queue = sensorStreams.get(sensorMessage.getSensorId());
-            while (queue.size() > 1200) {
-                queue.poll();
             }
         }
     }
