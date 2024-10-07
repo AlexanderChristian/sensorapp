@@ -11,7 +11,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 @Component
 public class ProcessingService {
@@ -20,48 +20,39 @@ public class ProcessingService {
 
     private final MeasurementIngestionService measurementService;
 
+    private final ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
     @Autowired
     public ProcessingService(MeasurementIngestionService measurementService) {
         this.measurementService = measurementService;
     }
 
 
-    @Scheduled(fixedRate = 5000) // Every 5s
-    public void computeAndOutputAverages() {
-        Map<String, Double> averages = new HashMap<>();
+    @Scheduled(fixedRate = 5000)
+    public void processSensorStreams() {
+        Map<String, Queue<SensorMessage>> sensorStreams = measurementService.getSensorStreams();
 
-        for (Map.Entry<String, Queue<SensorMessage>> streamPerSensor : measurementService.getSensorStreams().entrySet()) {
-            Queue<SensorMessage> sensorMessageStream = streamPerSensor.getValue();
-            String sensorId = streamPerSensor.getKey();
+        for (Map.Entry<String, Queue<SensorMessage>> entry : sensorStreams.entrySet()) {
+            String sensorId = entry.getKey();
+            Queue<SensorMessage> queue = entry.getValue();
 
-            processNewMessages(sensorId, sensorMessageStream);
-
-            averages.put(sensorId, dataProcessor.getAverageAcceleration(sensorId));
+            executor.submit(() -> processSensorQueue(sensorId, queue));
         }
-
-        outputAverages(averages);
     }
 
-    private void processNewMessages(String sensorId, Queue<SensorMessage> sensorMessageStream) {
-        Instant lastProcessed = lastProcessedTimestamps.getOrDefault(sensorId, Instant.MIN);
-
-        while (!sensorMessageStream.isEmpty()) {
-            SensorMessage message = sensorMessageStream.peek();
-
-            if (message.getCreatedTime().isAfter(lastProcessed)) {
+    private void processSensorQueue(String sensorId, Queue<SensorMessage> queue) {
+        while (!queue.isEmpty()) {
+            SensorMessage message = queue.poll();
+            if (message != null) {
                 dataProcessor.process(message);
-
-                lastProcessedTimestamps.put(sensorId, message.getCreatedTime());
-
-                sensorMessageStream.poll();
-            } else {
-                break;
             }
         }
+
+        double averageAcceleration = dataProcessor.getAverageAcceleration(sensorId);
+        outputAverage(sensorId, averageAcceleration);
     }
 
-    private void outputAverages(Map<String, Double> averages) {
-        System.out.println("Computed Averages:");
-        averages.forEach((sensorId, avg) -> System.out.println("Sensor " + sensorId + ": " + avg));
+    private void outputAverage(String sensorId, double average) {
+        System.out.println("Sensor ID: " + sensorId + " | Average Acceleration: " + average);
     }
 }

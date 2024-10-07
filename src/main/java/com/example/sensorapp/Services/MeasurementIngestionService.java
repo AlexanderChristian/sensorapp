@@ -1,6 +1,7 @@
 package com.example.sensorapp.Services;
 
 import com.example.sensorapp.Domain.Common.SensorMessage;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -26,5 +27,13 @@ public class MeasurementIngestionService {
 
     public Map<String, Queue<SensorMessage>> getSensorStreams() {
         return sensorStreams;
+    }
+
+    @Scheduled(fixedRate = 5000)
+    private void monitorSizeOfStreams() {
+        for (Map.Entry<String, Queue<SensorMessage>> stringQueueEntry : sensorStreams.entrySet()) {
+            System.out.println("Queue for sensor: " + stringQueueEntry.getKey() + " has size " + stringQueueEntry.getValue().size());
+        }
+
     }
 }

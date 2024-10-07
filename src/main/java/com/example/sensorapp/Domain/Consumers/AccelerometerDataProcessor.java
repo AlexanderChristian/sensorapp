@@ -46,7 +46,6 @@ public class AccelerometerDataProcessor implements DataProcessor {
     private void deleteElementsOutsideWindow(String sensorId, Instant createdTime) {
         Instant startOfTimeWindow = createdTime.minusMillis(windowDurationMs);
 
-        System.out.println("Deleting elements older than: " + startOfTimeWindow);
         ConcurrentLinkedDeque<TimestampedAcceleration> window = accelerationWindows.get(sensorId);
 
         Instant fallbackStartOfTimeWindow = Instant.now().minusMillis(windowDurationMs);
