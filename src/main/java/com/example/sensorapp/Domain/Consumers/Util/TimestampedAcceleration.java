@@ -1,4 +1,4 @@
-package com.example.sensorapp.Domain.Consumers;
+package com.example.sensorapp.Domain.Consumers.Util;
 
 import java.time.Instant;
 import java.util.Objects;

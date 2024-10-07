@@ -33,6 +33,7 @@
         Task 11 - Split data ingestion and processsing
         Task 12 - Parallelize processing
         Task 13 - Make it one processor per sensor.
+        Task 14 - Prepare acceleration output to fit elasticsearch
 
         Dont forget normalization
             Strategy pattern just in case?

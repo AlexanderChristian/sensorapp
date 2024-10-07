@@ -4,6 +4,7 @@ import com.example.sensorapp.Domain.Common.SensorMessage;
 import com.example.sensorapp.Domain.Consumers.AccelerometerDataProcessor;
 import com.example.sensorapp.Domain.Consumers.AccelerometerNormalizationStrategy;
 import com.example.sensorapp.Domain.Consumers.DataProcessor;
+import com.example.sensorapp.Domain.Consumers.Util.SlidingWindowAvg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -49,11 +50,11 @@ public class ProcessingService {
         }
 
         DataProcessor dataProcessor = sensorToProcessor.get(sensorId);
-        double averageAcceleration = dataProcessor.getAverageAcceleration(sensorId);
+        SlidingWindowAvg averageAcceleration = dataProcessor.getAverageAcceleration();
         outputAverage(sensorId, averageAcceleration);
     }
 
-    private void outputAverage(String sensorId, double average) {
+    private void outputAverage(String sensorId, SlidingWindowAvg average) {
         System.out.println("Sensor ID: " + sensorId + " | Average Acceleration: " + average);
     }
 }

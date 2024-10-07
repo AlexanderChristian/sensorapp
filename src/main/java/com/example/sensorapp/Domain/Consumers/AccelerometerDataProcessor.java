@@ -1,6 +1,8 @@
 package com.example.sensorapp.Domain.Consumers;
 
 import com.example.sensorapp.Domain.Common.SensorMessage;
+import com.example.sensorapp.Domain.Consumers.Util.SlidingWindowAvg;
+import com.example.sensorapp.Domain.Consumers.Util.TimestampedAccelerationAvg;
 
 import java.time.Instant;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -8,7 +10,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import static com.example.sensorapp.Domain.Constants.ACCELEROMETER;
 
 public class AccelerometerDataProcessor implements DataProcessor {
-    private final ConcurrentLinkedDeque<TimestampedAcceleration> accelerationWindow = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<TimestampedAccelerationAvg> accelerationWindow = new ConcurrentLinkedDeque<>();
     private long windowDurationMs = 60000; // default, maybe make configurable
     private final NormalizationStrategy normalizationStrategy;
     private final String sensorId;
@@ -27,18 +29,21 @@ public class AccelerometerDataProcessor implements DataProcessor {
     @Override
     public void process(SensorMessage message) {
 
-        if (!sensorId.equals(message.getSensorId()) || !ACCELEROMETER.equals(message.getDataType())) {
+        if (!sensorId.equals(message.getSensorId()) || !ACCELEROMETER.equals(message.getDataType()) || message.getData().length != 3) {
             throw new IllegalArgumentException("Invalid message for this processor");
         }
 
-        SensorMessage normalizedMessage =  normalize(message);
+        SensorMessage normalizedMessage = normalize(message);
+        Object[] data = normalizedMessage.getData();
+        double x = (double) data[0];
+        double y = (double) data[1];
+        double z = (double) data[2];
 
         //Delete older entries
         Instant createdTime = normalizedMessage.getCreatedTime();
         deleteElementsOutsideWindow(normalizedMessage.getSensorId(), createdTime);
 
-        double acceleration = computeAcceleration(normalizedMessage.getData());
-        accelerationWindow.addLast(new TimestampedAcceleration(acceleration, normalizedMessage.getCreatedTime()));
+        accelerationWindow.addLast(new TimestampedAccelerationAvg(x, y, z, normalizedMessage.getCreatedTime()));
     }
 
     private SensorMessage normalize(SensorMessage message) {
@@ -51,7 +56,7 @@ public class AccelerometerDataProcessor implements DataProcessor {
     private void deleteElementsOutsideWindow(String sensorId, Instant createdTime) {
         Instant startOfTimeWindow = createdTime.minusMillis(windowDurationMs);
 
-        ConcurrentLinkedDeque<TimestampedAcceleration> window = accelerationWindow;
+        ConcurrentLinkedDeque<TimestampedAccelerationAvg> window = accelerationWindow;
 
         Instant fallbackStartOfTimeWindow = Instant.now().minusMillis(windowDurationMs);
 
@@ -70,24 +75,31 @@ public class AccelerometerDataProcessor implements DataProcessor {
         });
     }
 
-    public double computeAcceleration(Object[] data) {
-        double x = (double) data[0];
-        double y = (double) data[1];
-        double z = (double) data[2];
-        return Math.sqrt(x * x + y * y + z * z);
-    }
-
+    //Check thread safety
     @Override
-    public double getAverageAcceleration(String sensorId) {
-        ConcurrentLinkedDeque<TimestampedAcceleration> window = accelerationWindow;
-        if (window.isEmpty()) {
-            return 0.0;
+    public SlidingWindowAvg getAverageAcceleration() {
+        double X = 0, Y = 0, Z = 0;
+        int count = 0;
+
+        if (accelerationWindow.isEmpty()) {
+            return new SlidingWindowAvg();
         }
-        deleteElementsOutsideWindow(sensorId, window.getLast().getTimestamp());
-        return window.stream().map(timestampedAcceleration -> timestampedAcceleration.getAcceleration())
-                .mapToDouble(Double::doubleValue)
-                .average()
-                .orElse(0.0);
+
+        for (TimestampedAccelerationAvg data : accelerationWindow) {
+            X += data.getX();
+            Y += data.getY();
+            Z += data.getZ();
+            count++;
+        }
+
+        double avgX = (count > 0) ? X / count : 0;
+        double avgY = (count > 0) ? Y / count : 0;
+        double avgZ = (count > 0) ? Z / count : 0;
+        Instant start = accelerationWindow.peekFirst().getTimestamp();
+        Instant end = accelerationWindow.peekLast().getTimestamp();
+
+
+        return new SlidingWindowAvg(sensorId, avgX, avgY, avgZ, start, end);
     }
 
 

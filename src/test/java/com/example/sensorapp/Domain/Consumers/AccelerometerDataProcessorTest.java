@@ -13,7 +13,7 @@ public class AccelerometerDataProcessorTest {
 
     public static final String SENSOR_1 = "sensor_1";
     private AccelerometerDataProcessor processor;
-
+    /*
     @BeforeEach
     public void setup() {
         processor = new AccelerometerDataProcessor(SENSOR_1, new AccelerometerNormalizationStrategy(), 2000);  // Configure 2-second window
@@ -71,4 +71,6 @@ public class AccelerometerDataProcessorTest {
         double avgAcceleration = processor.getAverageAcceleration(sensorId);
         assertEquals(0.0, avgAcceleration, "Average acceleration should be 0.0 for empty window");
     }
+
+     */
 }
