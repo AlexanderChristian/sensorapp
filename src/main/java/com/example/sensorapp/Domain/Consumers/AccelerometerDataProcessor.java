@@ -3,7 +3,6 @@ package com.example.sensorapp.Domain.Consumers;
 import com.example.sensorapp.Domain.Common.SensorMessage;
 
 import java.time.Instant;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
