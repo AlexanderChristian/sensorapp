@@ -23,9 +23,12 @@ public class ProcessingService {
 
     private final Map<String, DataProcessor> sensorToProcessor = new HashMap<>();
 
+    private final ElasticSearchService elasticSearchService;
+
     @Autowired
-    public ProcessingService(MeasurementIngestionService measurementService) {
+    public ProcessingService(MeasurementIngestionService measurementService, ElasticSearchService elasticSearchService) {
         this.measurementService = measurementService;
+        this.elasticSearchService = elasticSearchService;
     }
 
 
@@ -55,6 +58,7 @@ public class ProcessingService {
     }
 
     private void outputAverage(String sensorId, SlidingWindowAvg average) {
-        System.out.println("Sensor ID: " + sensorId + " | Average Acceleration: " + average);
+        System.out.println("Sensor ID: " + average.getSensorId() + " | Average Acceleration: " + average);
+        elasticSearchService.persistAverage(average);
     }
 }

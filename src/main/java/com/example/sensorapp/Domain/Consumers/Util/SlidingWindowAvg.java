@@ -35,4 +35,28 @@ public class SlidingWindowAvg {
                 ", end=" + end +
                 '}';
     }
+
+    public String getSensorId() {
+        return sensorId;
+    }
+
+    public double getAvgX() {
+        return avgX;
+    }
+
+    public double getAvgY() {
+        return avgY;
+    }
+
+    public double getAvgZ() {
+        return avgZ;
+    }
+
+    public Instant getStart() {
+        return start;
+    }
+
+    public Instant getEnd() {
+        return end;
+    }
 }
