@@ -40,6 +40,11 @@ public class ProcessingService {
             String sensorId = entry.getKey();
             Queue<SensorMessage> queue = entry.getValue();
 
+            //Stop working on empty queues
+            if (queue.isEmpty()){
+                continue;
+            }
+
             executor.submit(() -> processSensorQueue(sensorId, queue));
         }
     }
@@ -54,10 +59,15 @@ public class ProcessingService {
 
         DataProcessor dataProcessor = sensorToProcessor.get(sensorId);
         SlidingWindowAvg averageAcceleration = dataProcessor.getAverageAcceleration();
-        outputAverage(sensorId, averageAcceleration);
+
+        if (null == averageAcceleration.getSensorId()){
+            System.out.println("Nothing to persist.");
+            return;
+        }
+        outputAverage(averageAcceleration);
     }
 
-    private void outputAverage(String sensorId, SlidingWindowAvg average) {
+    private void outputAverage(SlidingWindowAvg average) {
         System.out.println("Sensor ID: " + average.getSensorId() + " | Average Acceleration: " + average);
         elasticSearchService.persistAverage(average);
     }

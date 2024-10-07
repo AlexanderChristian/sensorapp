@@ -66,13 +66,7 @@ public class AccelerometerDataProcessor implements DataProcessor {
             window.clear();
         }
 
-        window.removeIf(timestampedAcceleration -> {
-            boolean shouldRemove = timestampedAcceleration.getTimestamp().isBefore(startOfTimeWindow);
-            if (shouldRemove) {
-                System.out.println("Removing: " + timestampedAcceleration.getTimestamp());
-            }
-            return shouldRemove;
-        });
+        window.removeIf(timestampedAcceleration -> timestampedAcceleration.getTimestamp().isBefore(startOfTimeWindow));
     }
 
     //Check thread safety

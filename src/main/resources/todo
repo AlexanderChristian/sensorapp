@@ -34,6 +34,8 @@
         Task 12 - Parallelize processing
         Task 13 - Make it one processor per sensor.
         Task 14 - Prepare acceleration output to fit elasticsearch
+        Task 15 - Add elastic search config and repo + entity
+        Task 16 - Add elastic search config and repo + entity. Add ISO dates for elastic search persistence via Instant toString().
 
         Dont forget normalization
             Strategy pattern just in case?
