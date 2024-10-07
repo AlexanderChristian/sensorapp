@@ -29,8 +29,13 @@
         Task 7 - Link backend code to controller, part 1. Combine writes in service sensorStreams queues.
         Task 8 - Link backend code to controller, part 2. Link sensor streams with scheduled processing logic
         Task 9 - Debugging why stale messages are not deleted if the client stops. Fallback to Instant.now() in sliding window deletion logic.
+        Task 10 - Start adding strategies, starting with normalization
 
         Dont forget normalization
+            Strategy pattern just in case?
         And elasticsearch
         And logging
         and DI
+
+        More efficient processing
+            Send lists in processors?

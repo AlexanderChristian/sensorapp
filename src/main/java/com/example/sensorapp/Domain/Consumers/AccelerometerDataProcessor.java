@@ -14,15 +14,20 @@ public class AccelerometerDataProcessor implements DataProcessor {
     private final Map<String, ConcurrentLinkedDeque<TimestampedAcceleration>> accelerationWindows = new ConcurrentHashMap<>();
     private final long windowDurationMs;
 
+    private final NormalizationStrategy normalizationStrategy = new AccelerometerNormalizationStrategy();
+
     public AccelerometerDataProcessor(long windowDurationMilliseconds) {
         this.windowDurationMs = windowDurationMilliseconds;
     }
 
     @Override
     public void process(SensorMessage message) {
+
         if (!ACCELEROMETER.equals(message.getDataType())) {
             return;
         }
+
+        message = normalize(message);
 
         double acceleration = computeAcceleration(message.getData());
         accelerationWindows.computeIfAbsent(message.getSensorId(), k -> new ConcurrentLinkedDeque<>()).addLast(new TimestampedAcceleration(acceleration, message.getCreatedTime()));
@@ -30,6 +35,10 @@ public class AccelerometerDataProcessor implements DataProcessor {
         //Delete older entries
         Instant createdTime = message.getCreatedTime();
         deleteElementsOutsideWindow(message.getSensorId(), createdTime);
+    }
+
+    private SensorMessage normalize(SensorMessage message) {
+        return normalizationStrategy.normalize(message);
     }
 
 
