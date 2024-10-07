@@ -3,37 +3,42 @@ package com.example.sensorapp.Domain.Consumers;
 import com.example.sensorapp.Domain.Common.SensorMessage;
 
 import java.time.Instant;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 import static com.example.sensorapp.Domain.Constants.ACCELEROMETER;
 
 public class AccelerometerDataProcessor implements DataProcessor {
-    private final Map<String, ConcurrentLinkedDeque<TimestampedAcceleration>> accelerationWindows = new ConcurrentHashMap<>();
-    private final long windowDurationMs;
+    private final ConcurrentLinkedDeque<TimestampedAcceleration> accelerationWindow = new ConcurrentLinkedDeque<>();
+    private long windowDurationMs = 60000; // default, maybe make configurable
+    private final NormalizationStrategy normalizationStrategy;
+    private final String sensorId;
 
-    private final NormalizationStrategy normalizationStrategy = new AccelerometerNormalizationStrategy();
+    public AccelerometerDataProcessor(String sensorId, NormalizationStrategy strategy) {
+        this.sensorId = sensorId;
+        this.normalizationStrategy = strategy;
+    }
 
-    public AccelerometerDataProcessor(long windowDurationMilliseconds) {
-        this.windowDurationMs = windowDurationMilliseconds;
+    public AccelerometerDataProcessor(String sensorId, NormalizationStrategy strategy, long windowDurationMs) {
+        this.sensorId = sensorId;
+        this.normalizationStrategy = strategy;
+        this.windowDurationMs = windowDurationMs;
     }
 
     @Override
     public void process(SensorMessage message) {
 
-        if (!ACCELEROMETER.equals(message.getDataType())) {
-            return;
+        if (!sensorId.equals(message.getSensorId()) || !ACCELEROMETER.equals(message.getDataType())) {
+            throw new IllegalArgumentException("Invalid message for this processor");
         }
 
-        message = normalize(message);
-
-        double acceleration = computeAcceleration(message.getData());
-        accelerationWindows.computeIfAbsent(message.getSensorId(), k -> new ConcurrentLinkedDeque<>()).addLast(new TimestampedAcceleration(acceleration, message.getCreatedTime()));
+        SensorMessage normalizedMessage =  normalize(message);
 
         //Delete older entries
-        Instant createdTime = message.getCreatedTime();
-        deleteElementsOutsideWindow(message.getSensorId(), createdTime);
+        Instant createdTime = normalizedMessage.getCreatedTime();
+        deleteElementsOutsideWindow(normalizedMessage.getSensorId(), createdTime);
+
+        double acceleration = computeAcceleration(normalizedMessage.getData());
+        accelerationWindow.addLast(new TimestampedAcceleration(acceleration, normalizedMessage.getCreatedTime()));
     }
 
     private SensorMessage normalize(SensorMessage message) {
@@ -46,7 +51,7 @@ public class AccelerometerDataProcessor implements DataProcessor {
     private void deleteElementsOutsideWindow(String sensorId, Instant createdTime) {
         Instant startOfTimeWindow = createdTime.minusMillis(windowDurationMs);
 
-        ConcurrentLinkedDeque<TimestampedAcceleration> window = accelerationWindows.get(sensorId);
+        ConcurrentLinkedDeque<TimestampedAcceleration> window = accelerationWindow;
 
         Instant fallbackStartOfTimeWindow = Instant.now().minusMillis(windowDurationMs);
 
@@ -74,8 +79,8 @@ public class AccelerometerDataProcessor implements DataProcessor {
 
     @Override
     public double getAverageAcceleration(String sensorId) {
-        ConcurrentLinkedDeque<TimestampedAcceleration> window = accelerationWindows.get(sensorId);
-        if (window == null || window.isEmpty()) {
+        ConcurrentLinkedDeque<TimestampedAcceleration> window = accelerationWindow;
+        if (window.isEmpty()) {
             return 0.0;
         }
         deleteElementsOutsideWindow(sensorId, window.getLast().getTimestamp());

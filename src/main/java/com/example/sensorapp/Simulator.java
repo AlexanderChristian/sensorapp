@@ -6,16 +6,16 @@ import com.example.sensorapp.Domain.Producers.AccelerometerSensor;
 import com.example.sensorapp.Domain.Producers.SensorProducer;
 import com.example.sensorapp.Domain.Common.SensorMessage;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
 
 import static com.example.sensorapp.Domain.Constants.ACCELEROMETER;
 
+/*
 public class Simulator {
     private final Map<String, Queue<SensorMessage>> sensorStreams = new ConcurrentHashMap<>();
-    private final DataProcessor dataProcessor = new AccelerometerDataProcessor(60);
+    private final DataProcessor dataProcessor = new AccelerometerDataProcessor(sensorId, 60, sensorId);
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final ExecutorService sensorExecutor = Executors.newCachedThreadPool();
     private List<SensorProducer> sensors = new ArrayList<>();
@@ -78,7 +78,7 @@ public class Simulator {
     }
 
 }
-
+*/
 
 
 

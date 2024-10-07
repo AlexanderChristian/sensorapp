@@ -31,6 +31,9 @@
         Task 9 - Debugging why stale messages are not deleted if the client stops. Fallback to Instant.now() in sliding window deletion logic.
         Task 10 - Start adding strategies, starting with normalization
         Task 11 - Split data ingestion and processsing
+        Task 12 - Parallelize processing
+        Task 13 - Make it one processor per sensor.
+
         Dont forget normalization
             Strategy pattern just in case?
         And elasticsearch
