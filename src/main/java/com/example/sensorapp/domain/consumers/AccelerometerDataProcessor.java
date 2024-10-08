@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 import static com.example.sensorapp.domain.Constants.ACCELEROMETER;
@@ -17,21 +18,10 @@ public class AccelerometerDataProcessor implements DataProcessor {
 
     private final Logger log = LoggerFactory.getLogger(AccelerometerDataProcessor.class);
     public static final int ONE_MINUTE_MS = 60000;
-    private long windowDurationMs = ONE_MINUTE_MS;
     private final ConcurrentLinkedDeque<TimestampedAccelerationAvg> accelerationWindow = new ConcurrentLinkedDeque<>();
-    private NormalizationStrategy normalizationStrategy = new AccelerometerNormalizationStrategy();
     private final String sensorId;
-
-    public AccelerometerDataProcessor(String sensorId, NormalizationStrategy strategy) {
-        this.sensorId = sensorId;
-        this.normalizationStrategy = strategy;
-    }
-
-    public AccelerometerDataProcessor(String sensorId, NormalizationStrategy strategy, long windowDurationMs) {
-        this.sensorId = sensorId;
-        this.normalizationStrategy = strategy;
-        this.windowDurationMs = windowDurationMs;
-    }
+    private long windowDurationMs = ONE_MINUTE_MS;
+    private final NormalizationStrategy normalizationStrategy = new AccelerometerNormalizationStrategy();
 
     public AccelerometerDataProcessor(String sensorId, int slidingWindowDurationMs) {
         this.sensorId = sensorId;
@@ -89,7 +79,7 @@ public class AccelerometerDataProcessor implements DataProcessor {
             window.clear();
         }
 
-        window.removeIf(timestampedAcceleration -> timestampedAcceleration.getTimestamp().isBefore(startOfTimeWindow));
+        window.removeIf(timestampedAcceleration -> timestampedAcceleration.timestamp().isBefore(startOfTimeWindow));
     }
 
     @Override
@@ -104,7 +94,7 @@ public class AccelerometerDataProcessor implements DataProcessor {
 
         //Clear if one minute has passed for the last message
         TimestampedAccelerationAvg last = accelerationWindow.getLast();
-        deleteElementsOutsideWindow(sensorId, last.getTimestamp());
+        deleteElementsOutsideWindow(sensorId, last.timestamp());
 
         if (accelerationWindow.isEmpty()) {
             log.info("Empty acceleration window for: " + sensorId);
@@ -112,9 +102,9 @@ public class AccelerometerDataProcessor implements DataProcessor {
         }
 
         for (TimestampedAccelerationAvg data : accelerationWindow) {
-            X += data.getX();
-            Y += data.getY();
-            Z += data.getZ();
+            X += data.x();
+            Y += data.y();
+            Z += data.z();
             count++;
         }
 
@@ -122,11 +112,16 @@ public class AccelerometerDataProcessor implements DataProcessor {
         double avgY = (count > 0) ? Y / count : 0;
         double avgZ = (count > 0) ? Z / count : 0;
 
-        Instant start = accelerationWindow.peekFirst().getTimestamp();
 
-        Instant end = accelerationWindow.peekLast().getTimestamp();
+        Optional<Instant> start = Optional.ofNullable(accelerationWindow.peekFirst())
+                .map(TimestampedAccelerationAvg::timestamp);
 
-        return new SlidingWindowAvg(sensorId, avgX, avgY, avgZ, start, end);
+        Optional<Instant> end = Optional.ofNullable(accelerationWindow.peekLast())
+                .map(TimestampedAccelerationAvg::timestamp);
+
+        return new SlidingWindowAvg(sensorId, avgX, avgY, avgZ,
+                start.orElse(null),
+                end.orElse(null));
     }
 
 

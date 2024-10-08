@@ -1,8 +1,8 @@
 package com.example.sensorapp.services;
 
 import com.example.sensorapp.domain.common.SensorMessage;
-import com.example.sensorapp.domain.consumers.DataProcessorFactory;
 import com.example.sensorapp.domain.consumers.DataProcessor;
+import com.example.sensorapp.domain.consumers.DataProcessorFactory;
 import com.example.sensorapp.domain.consumers.util.SlidingWindowAvg;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
@@ -22,13 +22,9 @@ import java.util.concurrent.Executors;
 public class ProcessingService {
 
     private final Map<String, DataProcessor> sensorToProcessor = new HashMap<>();
-
     private final ExecutorService executor = Executors.newCachedThreadPool();
-
     private final ExecutorService mainProcessingThreadExecutor = Executors.newSingleThreadExecutor();
-
     private final MeasurementIngestionService measurementService;
-
     private final ElasticSearchService elasticSearchService;
     private final Logger logger = LoggerFactory.getLogger(ProcessingService.class);
 
@@ -39,7 +35,6 @@ public class ProcessingService {
     public int SLIDING_WINDOW_DURATION_MILLIS;
 
 
-
     @Autowired
     public ProcessingService(MeasurementIngestionService measurementService, ElasticSearchService elasticSearchService) {
         this.measurementService = measurementService;
@@ -48,10 +43,10 @@ public class ProcessingService {
 
 
     @PostConstruct
-    private void startMainProcessing(){
+    private void startMainProcessing() {
         logger.info("Main processing thread started.");
-        logger.info("Sliding window configured to be"+ SLIDING_WINDOW_DURATION_MILLIS);
-        logger.info("Polling sleep duration configured to be "+ SLEEP_DURATION_MILLIS);
+        logger.info("Sliding window configured to be " + SLIDING_WINDOW_DURATION_MILLIS);
+        logger.info("Polling sleep duration configured to be " + SLEEP_DURATION_MILLIS);
         mainProcessingThreadExecutor.submit(this::processSensorStreams);
     }
 
@@ -98,7 +93,7 @@ public class ProcessingService {
 
             SlidingWindowAvg averageAcceleration = dataProcessor.getAverageAcceleration();
 
-            if (averageAcceleration != null && averageAcceleration.getSensorId() != null) {
+            if (averageAcceleration != null && averageAcceleration.getSensorId() != null && averageAcceleration.getStart() != null) {
                 outputAverage(averageAcceleration);
             } else {
                 logger.info("No valid average data for sensor: " + sensorId);

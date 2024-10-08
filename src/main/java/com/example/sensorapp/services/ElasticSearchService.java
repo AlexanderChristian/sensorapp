@@ -19,26 +19,23 @@ public class ElasticSearchService {
         this.sensorDataRepository = sensorDataRepository;
     }
 
-    public void persistAverage(SlidingWindowAvg slidingAverage){
-        SensorDataEntity sensorData = new SensorDataEntity();
-        sensorData.setId(slidingAverage.getSensorId()+"_"+slidingAverage.getStart().toString());
-        sensorData.setSensorId(slidingAverage.getSensorId());
-
-        sensorData.setStart(slidingAverage.getStart().toString());
-        sensorData.setEnd(slidingAverage.getEnd().toString());
-
-        SensorDataEntity.Average persistedAverage = new SensorDataEntity.Average();
-        persistedAverage.setX(slidingAverage.getAvgX());
-        persistedAverage.setY(slidingAverage.getAvgY());
-        persistedAverage.setZ(slidingAverage.getAvgZ());
-
-        sensorData.setAvg(persistedAverage);
+    public void persistAverage(SlidingWindowAvg slidingAverage) {
+        SensorDataEntity sensorData = SensorDataEntity.builder()
+                .id(slidingAverage.getSensorId() + "_" + slidingAverage.getStart().toString())
+                .sensorId(slidingAverage.getSensorId())
+                .start(slidingAverage.getStart().toString())
+                .end(slidingAverage.getEnd().toString())
+                .avg(SensorDataEntity.Average.builder()
+                        .x(slidingAverage.getAvgX())
+                        .y(slidingAverage.getAvgY())
+                        .z(slidingAverage.getAvgZ())
+                        .build())
+                .build();
 
         try {
             sensorDataRepository.save(sensorData);
             log.info("Persisted to elastic search");
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             log.error("Could not persist to elastic search.");
         }
     }
