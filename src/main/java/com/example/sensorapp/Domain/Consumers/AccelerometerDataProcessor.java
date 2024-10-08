@@ -4,7 +4,6 @@ import com.example.sensorapp.Domain.Common.SensorMessage;
 import com.example.sensorapp.Domain.Consumers.Util.SlidingWindowAvg;
 import com.example.sensorapp.Domain.Consumers.Util.TimestampedAccelerationAvg;
 import com.example.sensorapp.Domain.Normalization.NormalizationStrategy;
-import com.example.sensorapp.Services.MeasurementIngestionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +16,7 @@ public class AccelerometerDataProcessor implements DataProcessor {
 
     private final Logger log = LoggerFactory.getLogger(AccelerometerDataProcessor.class);
     private final ConcurrentLinkedDeque<TimestampedAccelerationAvg> accelerationWindow = new ConcurrentLinkedDeque<>();
-    private long windowDurationMs = 60000; // default, maybe make configurable
+    private long windowDurationMs = 10000; // default, maybe make configurable
     private final NormalizationStrategy normalizationStrategy;
     private final String sensorId;
 
@@ -82,6 +81,16 @@ public class AccelerometerDataProcessor implements DataProcessor {
         int count = 0;
 
         if (accelerationWindow.isEmpty()) {
+            log.info("Empty acceleration window for: "+sensorId);
+            return new SlidingWindowAvg();
+        }
+
+        //Clear if one minute has passed for the last message
+        TimestampedAccelerationAvg last = accelerationWindow.getLast();
+        deleteElementsOutsideWindow(sensorId, last.getTimestamp());
+
+        if (accelerationWindow.isEmpty()) {
+            log.info("Empty acceleration window for: "+sensorId);
             return new SlidingWindowAvg();
         }
 
@@ -95,7 +104,9 @@ public class AccelerometerDataProcessor implements DataProcessor {
         double avgX = (count > 0) ? X / count : 0;
         double avgY = (count > 0) ? Y / count : 0;
         double avgZ = (count > 0) ? Z / count : 0;
+
         Instant start = accelerationWindow.peekFirst().getTimestamp();
+
         Instant end = accelerationWindow.peekLast().getTimestamp();
 
 
