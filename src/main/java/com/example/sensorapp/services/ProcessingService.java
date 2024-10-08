@@ -12,10 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
@@ -29,12 +26,13 @@ public class ProcessingService {
     private final MeasurementIngestionService measurementService;
     private final ElasticSearchService elasticSearchService;
     private final Logger logger = LoggerFactory.getLogger(ProcessingService.class);
-
     @Value("${sensor.processing.sleep-duration-millis}")
     public int SLEEP_DURATION_MILLIS;
-
     @Value("${sensor.processing.sliding-window-duration-millis}")
     public int SLIDING_WINDOW_DURATION_MILLIS;
+
+    @Value("${sensor.processing.message-processing-batch-size}")
+    public int MESSAGE_PROCESSING_BATCH_SIZE = 1000;
 
 
     @Autowired
@@ -49,6 +47,7 @@ public class ProcessingService {
         logger.info("Main processing thread started.");
         logger.info("Sliding window configured to be " + SLIDING_WINDOW_DURATION_MILLIS);
         logger.info("Polling sleep duration configured to be " + SLEEP_DURATION_MILLIS);
+        logger.info("Processing batch size configured to be " + MESSAGE_PROCESSING_BATCH_SIZE);
         mainProcessingThreadExecutor.submit(this::processSensorStreams);
     }
 
@@ -72,15 +71,23 @@ public class ProcessingService {
     }
 
 
-
     private void processSensorQueue(String sensorId, Queue<SensorMessage> queue) {
-        Stream.generate(queue::poll)
-                .takeWhile(Objects::nonNull)  // Stop when the queue returns null (queue is empty)
-                .forEach(message -> {
-                    DataProcessor dataProcessor = sensorToProcessor.computeIfAbsent(sensorId,
-                            id -> DataProcessorFactory.getProcessor(message.getSensorId(), message.getDataType(), SLIDING_WINDOW_DURATION_MILLIS));
-                    dataProcessor.process(message);
-                });
+        while (!queue.isEmpty()) {
+            List<SensorMessage> batch = new ArrayList<>();
+            for (int i = 0; i < MESSAGE_PROCESSING_BATCH_SIZE && !queue.isEmpty(); i++) {
+                SensorMessage message = queue.poll();
+                if (message != null) {
+                    batch.add(message);
+                }
+            }
+
+            if (!batch.isEmpty()) {
+                DataProcessor dataProcessor = sensorToProcessor.computeIfAbsent(sensorId,
+                        id -> DataProcessorFactory.getProcessor(sensorId, batch.get(0).getDataType(), SLIDING_WINDOW_DURATION_MILLIS));
+
+                dataProcessor.processBatch(batch);
+            }
+        }
     }
 
     @Scheduled(fixedRate = 5000)

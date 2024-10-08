@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
@@ -26,6 +27,11 @@ public class AccelerometerDataProcessor implements DataProcessor {
     public AccelerometerDataProcessor(String sensorId, int slidingWindowDurationMs) {
         this.sensorId = sensorId;
         this.windowDurationMs = slidingWindowDurationMs;
+    }
+
+    @Override
+    public void processBatch(List<SensorMessage> batch) {
+        batch.forEach(this::process);
     }
 
     @Override
@@ -80,8 +86,8 @@ public class AccelerometerDataProcessor implements DataProcessor {
 
     @Override
     public SlidingWindowAvg getAverageAcceleration() {
-        double X = 0, Y = 0, Z = 0;
-        int count = 0;
+        double X, Y, Z;
+        int count;
 
         if (accelerationWindow.isEmpty()) {
             log.info("Empty acceleration window for: " + sensorId);
