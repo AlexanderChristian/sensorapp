@@ -56,26 +56,21 @@ public class ProcessingService {
         while (true) {
             Map<String, Queue<SensorMessage>> sensorStreams = measurementService.getSensorStreams();
 
-            for (Map.Entry<String, Queue<SensorMessage>> entry : sensorStreams.entrySet()) {
+            sensorStreams.entrySet().stream().filter(entry -> !entry.getValue().isEmpty()).forEach(entry -> {
                 String sensorId = entry.getKey();
                 Queue<SensorMessage> queue = entry.getValue();
-
-                //Stop working on empty queues
-                if (queue.isEmpty()) {
-                    continue;
-                }
-
                 executor.submit(() -> processSensorQueue(sensorId, queue));
+            });
 
-                try {
-                    Thread.sleep(SLEEP_DURATION_MILLIS);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    throw new RuntimeException(e);
-                }
+            try {
+                Thread.sleep(SLEEP_DURATION_MILLIS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(e);
             }
         }
     }
+
 
 
     private void processSensorQueue(String sensorId, Queue<SensorMessage> queue) {

@@ -97,16 +97,14 @@ public class AccelerometerDataProcessor implements DataProcessor {
             return new SlidingWindowAvg();
         }
 
-        for (TimestampedAccelerationAvg data : accelerationWindow) {
-            X += data.x();
-            Y += data.y();
-            Z += data.z();
-            count++;
-        }
+        X = accelerationWindow.stream().mapToDouble(TimestampedAccelerationAvg::x).sum();
+        Y = accelerationWindow.stream().mapToDouble(TimestampedAccelerationAvg::y).sum();
+        Z = accelerationWindow.stream().mapToDouble(TimestampedAccelerationAvg::z).sum();
+        count = accelerationWindow.size();
 
-        double avgX = (count > 0) ? X / count : 0;
-        double avgY = (count > 0) ? Y / count : 0;
-        double avgZ = (count > 0) ? Z / count : 0;
+        double avgX = X / count;
+        double avgY = Y / count;
+        double avgZ = Z / count;
 
 
         Optional<Instant> start = Optional.ofNullable(accelerationWindow.peekFirst())

@@ -33,8 +33,6 @@ public class MeasurementIngestionService {
 
     @Scheduled(fixedRate = 5000)
     private void monitorSizeOfStreams() {
-        for (Map.Entry<String, Queue<SensorMessage>> stringQueueEntry : sensorStreams.entrySet()) {
-            log.info("Queue for sensor: " + stringQueueEntry.getKey() + " has size " + stringQueueEntry.getValue().size());
-        }
+        sensorStreams.entrySet().forEach(entry -> log.info("Queue for sensor: " + entry.getKey() + " has size " + entry.getValue().size()));
     }
 }
