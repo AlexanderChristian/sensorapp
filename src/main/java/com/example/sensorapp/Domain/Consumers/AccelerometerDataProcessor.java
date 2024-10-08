@@ -44,12 +44,19 @@ public class AccelerometerDataProcessor implements DataProcessor {
         if (!sensorId.equals(message.getSensorId()) || !ACCELEROMETER.equals(message.getDataType()) || message.getData().length != 3) {
             throw new IllegalArgumentException("Invalid message for this processor");
         }
+        double x = 0, y = 0, z = 0;
 
         SensorMessage normalizedMessage = normalize(message);
         Object[] data = normalizedMessage.getData();
-        double x = (double) data[0];
-        double y = (double) data[1];
-        double z = (double) data[2];
+        if (data[0] != null && data[0] instanceof Double) {
+            x = (double) data[0];
+        }
+        if (data[1] != null && data[1] instanceof Double) {
+            y = (double) data[1];
+        }
+        if (data[2] != null && data[2] instanceof Double) {
+            z = (double) data[2];
+        }
 
         //Delete older entries
         Instant createdTime = normalizedMessage.getCreatedTime();
