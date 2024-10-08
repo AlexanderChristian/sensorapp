@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @Component
 public class MeasurementIngestionService {
     private final Logger log = LoggerFactory.getLogger(MeasurementIngestionService.class);
-
     private final Map<String, Queue<SensorMessage>> sensorStreams = new ConcurrentHashMap<>();
 
     public void writeMessageToQueues(SensorMessage message) {
@@ -24,7 +23,6 @@ public class MeasurementIngestionService {
         sensorStreams.computeIfAbsent(sensorId, k -> new ConcurrentLinkedQueue<>());
 
         sensorStreams.get(sensorId).add(message);
-
     }
 
     public void writeMessagesToQueues(List<SensorMessage> messages) {
@@ -34,7 +32,6 @@ public class MeasurementIngestionService {
             sensorStreams.computeIfAbsent(sensorId, k -> new ConcurrentLinkedQueue<>());
 
             sensorStreams.get(sensorId).add(message);
-
         }
     }
 
@@ -47,6 +44,5 @@ public class MeasurementIngestionService {
         for (Map.Entry<String, Queue<SensorMessage>> stringQueueEntry : sensorStreams.entrySet()) {
             log.info("Queue for sensor: " + stringQueueEntry.getKey() + " has size " + stringQueueEntry.getValue().size());
         }
-
     }
 }
