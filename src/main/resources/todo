@@ -38,10 +38,14 @@
         Task 16 - Add elastic search config and repo + entity. Add ISO dates for elastic search persistence via Instant toString().
         Task 17 - Refactor, add logging
         Task 18 - Split processing from outputting every 5 seconds. Currently they are bundled
+        Task 19 - Migrate client to openfeign
+        Task 20 - Create factory for new processors, make sliding window and polling rate configurable
+
+
+        Task 20 - Dockerize, add elastic search
+
         Dont forget normalization
             Strategy pattern just in case?
-        And elasticsearch
-        And logging
         and DI
 
         More efficient processing

@@ -1,14 +1,14 @@
 package com.example.sensorapp.Services;
 
 import com.example.sensorapp.Domain.Common.SensorMessage;
-import com.example.sensorapp.Domain.Consumers.AccelerometerDataProcessor;
-import com.example.sensorapp.Domain.Normalization.AccelerometerNormalizationStrategy;
+import com.example.sensorapp.Domain.Consumers.DataProcessorFactory;
 import com.example.sensorapp.Domain.Consumers.DataProcessor;
 import com.example.sensorapp.Domain.Consumers.Util.SlidingWindowAvg;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -21,17 +21,24 @@ import java.util.concurrent.Executors;
 @Component
 public class ProcessingService {
 
-    public static final int SLEEP_DURATION_AFTER_PROCESSING = 1000;
-    private final Logger logger = LoggerFactory.getLogger(ProcessingService.class);
-    private final MeasurementIngestionService measurementService;
+    private final Map<String, DataProcessor> sensorToProcessor = new HashMap<>();
 
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
     private final ExecutorService mainProcessingThreadExecutor = Executors.newSingleThreadExecutor();
 
-    private final Map<String, DataProcessor> sensorToProcessor = new HashMap<>();
+    private final MeasurementIngestionService measurementService;
 
     private final ElasticSearchService elasticSearchService;
+    private final Logger logger = LoggerFactory.getLogger(ProcessingService.class);
+
+    @Value("${sensor.processing.sleep-duration-millis}")
+    public int SLEEP_DURATION_MILLIS;
+
+    @Value("${sensor.processing.sliding-window-duration-millis}")
+    public int SLIDING_WINDOW_DURATION_MILLIS;
+
+
 
     @Autowired
     public ProcessingService(MeasurementIngestionService measurementService, ElasticSearchService elasticSearchService) {
@@ -43,6 +50,8 @@ public class ProcessingService {
     @PostConstruct
     private void startMainProcessing(){
         logger.info("Main processing thread started.");
+        logger.info("Sliding window configured to be"+ SLIDING_WINDOW_DURATION_MILLIS);
+        logger.info("Polling sleep duration configured to be "+ SLEEP_DURATION_MILLIS);
         mainProcessingThreadExecutor.submit(this::processSensorStreams);
     }
 
@@ -62,7 +71,7 @@ public class ProcessingService {
                 executor.submit(() -> processSensorQueue(sensorId, queue));
 
                 try {
-                    Thread.sleep(SLEEP_DURATION_AFTER_PROCESSING);
+                    Thread.sleep(SLEEP_DURATION_MILLIS);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     throw new RuntimeException(e);
@@ -75,7 +84,7 @@ public class ProcessingService {
     private void processSensorQueue(String sensorId, Queue<SensorMessage> queue) {
         while (!queue.isEmpty()) {
             SensorMessage message = queue.poll();
-            DataProcessor dataProcessor = sensorToProcessor.computeIfAbsent(message.getSensorId(), id -> new AccelerometerDataProcessor(sensorId, new AccelerometerNormalizationStrategy()));
+            DataProcessor dataProcessor = sensorToProcessor.computeIfAbsent(sensorId, id -> DataProcessorFactory.getProcessor(message.getSensorId(), message.getDataType(), SLIDING_WINDOW_DURATION_MILLIS));
 
             dataProcessor.process(message);
         }
@@ -83,7 +92,6 @@ public class ProcessingService {
 
     @Scheduled(fixedRate = 5000)
     public void outputSensorAverages() {
-
         for (Map.Entry<String, DataProcessor> entry : sensorToProcessor.entrySet()) {
             String sensorId = entry.getKey();
             DataProcessor dataProcessor = entry.getValue();

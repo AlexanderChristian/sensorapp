@@ -15,9 +15,10 @@ import static com.example.sensorapp.Domain.Constants.ACCELEROMETER;
 public class AccelerometerDataProcessor implements DataProcessor {
 
     private final Logger log = LoggerFactory.getLogger(AccelerometerDataProcessor.class);
+    public static final int ONE_MINUTE_MS = 60000;
+    private long windowDurationMs = ONE_MINUTE_MS;
     private final ConcurrentLinkedDeque<TimestampedAccelerationAvg> accelerationWindow = new ConcurrentLinkedDeque<>();
-    private long windowDurationMs = 10000; // default, maybe make configurable
-    private final NormalizationStrategy normalizationStrategy;
+    private NormalizationStrategy normalizationStrategy;
     private final String sensorId;
 
     public AccelerometerDataProcessor(String sensorId, NormalizationStrategy strategy) {
@@ -29,6 +30,11 @@ public class AccelerometerDataProcessor implements DataProcessor {
         this.sensorId = sensorId;
         this.normalizationStrategy = strategy;
         this.windowDurationMs = windowDurationMs;
+    }
+
+    public AccelerometerDataProcessor(String sensorId, int slidingWindowDurationMs) {
+        this.sensorId = sensorId;
+        this.windowDurationMs = slidingWindowDurationMs;
     }
 
     @Override
@@ -52,7 +58,11 @@ public class AccelerometerDataProcessor implements DataProcessor {
     }
 
     private SensorMessage normalize(SensorMessage message) {
-        return normalizationStrategy.normalize(message);
+        if (normalizationStrategy != null) {
+            return normalizationStrategy.normalize(message);
+        } else {
+            return message;
+        }
     }
 
 
@@ -81,7 +91,7 @@ public class AccelerometerDataProcessor implements DataProcessor {
         int count = 0;
 
         if (accelerationWindow.isEmpty()) {
-            log.info("Empty acceleration window for: "+sensorId);
+            log.info("Empty acceleration window for: " + sensorId);
             return new SlidingWindowAvg();
         }
 
@@ -90,7 +100,7 @@ public class AccelerometerDataProcessor implements DataProcessor {
         deleteElementsOutsideWindow(sensorId, last.getTimestamp());
 
         if (accelerationWindow.isEmpty()) {
-            log.info("Empty acceleration window for: "+sensorId);
+            log.info("Empty acceleration window for: " + sensorId);
             return new SlidingWindowAvg();
         }
 
