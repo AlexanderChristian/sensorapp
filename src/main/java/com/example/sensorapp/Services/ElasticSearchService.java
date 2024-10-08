@@ -34,7 +34,12 @@ public class ElasticSearchService {
 
         sensorData.setAvg(persistedAverage);
 
-        sensorDataRepository.save(sensorData);
-        log.info("Persisted to elastic search");
+        try {
+            sensorDataRepository.save(sensorData);
+            log.info("Persisted to elastic search");
+        }
+        catch (Exception e){
+            log.error("Could not persist to elastic search.");
+        }
     }
 }

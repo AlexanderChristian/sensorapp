@@ -3,6 +3,7 @@ package com.example.sensorapp.Domain.Consumers;
 import com.example.sensorapp.Domain.Common.SensorMessage;
 import com.example.sensorapp.Domain.Consumers.Util.SlidingWindowAvg;
 import com.example.sensorapp.Domain.Consumers.Util.TimestampedAccelerationAvg;
+import com.example.sensorapp.Domain.Normalization.AccelerometerNormalizationStrategy;
 import com.example.sensorapp.Domain.Normalization.NormalizationStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +19,7 @@ public class AccelerometerDataProcessor implements DataProcessor {
     public static final int ONE_MINUTE_MS = 60000;
     private long windowDurationMs = ONE_MINUTE_MS;
     private final ConcurrentLinkedDeque<TimestampedAccelerationAvg> accelerationWindow = new ConcurrentLinkedDeque<>();
-    private NormalizationStrategy normalizationStrategy;
+    private NormalizationStrategy normalizationStrategy = new AccelerometerNormalizationStrategy();
     private final String sensorId;
 
     public AccelerometerDataProcessor(String sensorId, NormalizationStrategy strategy) {
@@ -84,7 +85,6 @@ public class AccelerometerDataProcessor implements DataProcessor {
         window.removeIf(timestampedAcceleration -> timestampedAcceleration.getTimestamp().isBefore(startOfTimeWindow));
     }
 
-    //Check thread safety
     @Override
     public SlidingWindowAvg getAverageAcceleration() {
         double X = 0, Y = 0, Z = 0;

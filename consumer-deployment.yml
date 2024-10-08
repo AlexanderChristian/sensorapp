@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consumer-app-v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: consumer-app-v1
+  template:
+    metadata:
+      labels:
+        app: consumer-app-v1
+    spec:
+      containers:
+        - name: consumer-app-v1
+          image: consumer-app-v1:latest
+          imagePullPolicy: Never  # Local only
+          ports:
+            - containerPort: 8090
+      initContainers:
+        - name: wait-for-elasticsearch
+          image: busybox
+          command: ['sh', '-c', 'until nc -z elasticsearch-service 9200; do echo waiting for elasticsearch; sleep 5; done;']
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: consumer-service
+spec:
+  selector:
+    app: consumer-app-v1
+  ports:
+    - protocol: TCP
+      port: 8090
+      targetPort: 8090
+  type: ClusterIP
