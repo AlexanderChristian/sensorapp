@@ -20,6 +20,10 @@ public class SensorMessage {
     @NotNull(message = "dataUnit must not be null")
     private String dataUnit;
 
+
+    public SensorMessage() {
+    }
+
     public SensorMessage(String sensorId, Instant createdTime, Object[] data, String dataType, String dataUnit) {
         this.sensorId = sensorId;
         this.createdTime = createdTime;

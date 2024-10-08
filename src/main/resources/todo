@@ -40,14 +40,8 @@
         Task 18 - Split processing from outputting every 5 seconds. Currently they are bundled
         Task 19 - Migrate client to openfeign
         Task 20 - Create factory for new processors, make sliding window and polling rate configurable
-
-
-        Task 20 - Dockerize, add elastic search
-
-        Dont forget normalization
-            Strategy pattern just in case?
-        and DI
-
-        More efficient processing
-            Send lists in processors?
+        Task 21 - Add docker + orchestration
+        Task 22 - Add kibana
+        Task 23 - Add rest validation
+        Task 24 - Improve tests for new logic
 

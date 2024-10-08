@@ -1,76 +1,122 @@
 package com.example.sensorapp.Domain.Consumers;
 
 import com.example.sensorapp.Domain.Common.SensorMessage;
+import com.example.sensorapp.Domain.Consumers.Util.SlidingWindowAvg;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
-import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AccelerometerDataProcessorTest {
 
-    public static final String SENSOR_1 = "sensor_1";
     private AccelerometerDataProcessor processor;
-    /*
+
     @BeforeEach
     public void setup() {
-        processor = new AccelerometerDataProcessor(SENSOR_1, new AccelerometerNormalizationStrategy(), 2000);  // Configure 2-second window
+        processor = new AccelerometerDataProcessor("SENSOR001", 60000);
     }
 
     @Test
-    public void testComputeAcceleration() {
-        Object[] data = {3.0, 4.0, 0.0};  // X = 3, Y = 4, Z = 0, should give acceleration of 5
-        double acceleration = processor.computeAcceleration(data);
-        assertEquals(5.0, acceleration, 0.01, "Acceleration should be 5.0 m/s²");
+    public void testProcess_ValidData() {
+
+        SensorMessage message = new SensorMessage();
+        message.setSensorId("SENSOR001");
+        message.setCreatedTime(Instant.now());
+        message.setData(new Object[]{1.0, 2.0, 3.0});
+        message.setDataType("accelerometer");
+
+
+        processor.process(message);
+
+
+        SlidingWindowAvg average = processor.getAverageAcceleration();
+        assertEquals(1.0, average.getAvgX());
+        assertEquals(2.0, average.getAvgY());
+        assertEquals(3.0, average.getAvgZ());
     }
 
     @Test
-    public void testSlidingWindowRemovesOldEntries() throws InterruptedException {
-        String sensorId = SENSOR_1;
+    public void testProcess_InvalidData() {
+        SensorMessage invalidMessage = new SensorMessage();
+        invalidMessage.setSensorId("WRONG_SENSOR");
+        invalidMessage.setCreatedTime(Instant.now());
+        invalidMessage.setData(new Object[]{1.0, 2.0, 3.0});
+        invalidMessage.setDataType("accelerometer");
 
-        // Simulate messages over time
+        assertThrows(IllegalArgumentException.class, () -> processor.process(invalidMessage));
+    }
+
+    @Test
+    public void testSlidingWindow_DeletionOfOldEntries() {
         Instant now = Instant.now();
 
-        // First message at "now"
-        SensorMessage msg1 = new SensorMessage(sensorId, now, new Object[]{1.0, 1.0, 1.0}, "accelerometer", "m/s²");
-        processor.process(msg1);
+        SensorMessage message1 = new SensorMessage();
+        message1.setSensorId("SENSOR001");
+        message1.setCreatedTime(now.minusMillis(70000));
+        message1.setData(new Object[]{1.0, 2.0, 3.0});
+        message1.setDataType("accelerometer");
 
-        // Wait for 1 second
-        TimeUnit.SECONDS.sleep(1);
+        SensorMessage message2 = new SensorMessage();
+        message2.setSensorId("SENSOR001");
+        message2.setCreatedTime(now.minusMillis(5000));
+        message2.setData(new Object[]{4.0, 5.0, 6.0});
+        message2.setDataType("accelerometer");
 
-        // Second message at "now + 1 second"
-        Instant oneSecondLater = now.plusSeconds(1);
-        SensorMessage msg2 = new SensorMessage(sensorId, oneSecondLater, new Object[]{2.0, 2.0, 2.0}, "accelerometer", "m/s²");
-        processor.process(msg2);
+        processor.process(message1);
+        processor.process(message2);
 
-        // Wait for another 2 seconds (total 3 seconds)
-        TimeUnit.SECONDS.sleep(2);
-
-        // Third message at "now + 3 seconds"
-        Instant threeSecondsLater = now.plusSeconds(3);
-        SensorMessage msg3 = new SensorMessage(sensorId, threeSecondsLater, new Object[]{3.0, 3.0, 3.0}, "accelerometer", "m/s²");
-        processor.process(msg3);
-
-        // At this point, only the second and third messages should be in the window (the first should be removed)
-        double averageAcceleration = processor.getAverageAcceleration(sensorId);
-
-        // Calculate expected average (only msg2 and msg3 should remain)
-        double expectedAccelerationMsg2 = Math.sqrt(2.0 * 2.0 + 2.0 * 2.0 + 2.0 * 2.0); // ~3.46
-        double expectedAccelerationMsg3 = Math.sqrt(3.0 * 3.0 + 3.0 * 3.0 + 3.0 * 3.0); // ~5.20
-        double expectedAverage = (expectedAccelerationMsg2 + expectedAccelerationMsg3) / 2;
-
-        assertEquals(expectedAverage, averageAcceleration, 0.01, "Average should only include last two messages in sliding window");
+        SlidingWindowAvg average = processor.getAverageAcceleration();
+        assertEquals(4.0, average.getAvgX());
+        assertEquals(5.0, average.getAvgY());
+        assertEquals(6.0, average.getAvgZ());
     }
 
     @Test
-    public void testEmptyWindowGivesZeroAverage() {
-        String sensorId = "sensor_empty";
-        // Get average for a sensor that hasn't received any messages
-        double avgAcceleration = processor.getAverageAcceleration(sensorId);
-        assertEquals(0.0, avgAcceleration, "Average acceleration should be 0.0 for empty window");
+    public void testEmptyWindow() {
+        SlidingWindowAvg average = processor.getAverageAcceleration();
+
+        assertEquals(0, average.getAvgX());
+        assertEquals(0, average.getAvgY());
+        assertEquals(0, average.getAvgZ());
+        assertNull(average.getStart());
+        assertNull(average.getEnd());
     }
 
-     */
+    @Test
+    public void testSlidingWindowWithMultipleEntries() {
+        Instant now = Instant.now();
+
+        SensorMessage message1 = new SensorMessage();
+        message1.setSensorId("SENSOR001");
+        message1.setCreatedTime(now.minusMillis(20000));
+        message1.setData(new Object[]{1.0, 2.0, 3.0});
+        message1.setDataType("accelerometer");
+
+        SensorMessage message2 = new SensorMessage();
+        message2.setSensorId("SENSOR001");
+        message2.setCreatedTime(now.minusMillis(10000));
+        message2.setData(new Object[]{4.0, 5.0, 6.0});
+        message2.setDataType("accelerometer");
+
+        SensorMessage message3 = new SensorMessage();
+        message3.setSensorId("SENSOR001");
+        message3.setCreatedTime(now);
+        message3.setData(new Object[]{7.0, 8.0, 9.0});
+        message3.setDataType("accelerometer");
+
+        processor.process(message1);
+        processor.process(message2);
+        processor.process(message3);
+
+        SlidingWindowAvg average = processor.getAverageAcceleration();
+        assertEquals(4.0, average.getAvgX());
+        assertEquals(5.0, average.getAvgY());
+        assertEquals(6.0, average.getAvgZ());
+
+
+        assertEquals(now.minusMillis(20000), average.getStart());
+        assertEquals(now, average.getEnd());
+    }
 }
