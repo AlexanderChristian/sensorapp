@@ -1,8 +1,8 @@
-package com.example.sensorapp.Services;
+package com.example.sensorapp.services;
 
-import com.example.sensorapp.Domain.Consumers.Util.SlidingWindowAvg;
-import com.example.sensorapp.Domain.Entities.SensorDataEntity;
-import com.example.sensorapp.Repositories.SensorDataRepository;
+import com.example.sensorapp.domain.consumers.util.SlidingWindowAvg;
+import com.example.sensorapp.domain.entities.SensorDataEntity;
+import com.example.sensorapp.repositories.SensorDataRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

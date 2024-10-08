@@ -1,6 +1,6 @@
-package com.example.sensorapp.Services;
+package com.example.sensorapp.services;
 
-import com.example.sensorapp.Domain.Common.SensorMessage;
+import com.example.sensorapp.domain.common.SensorMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;

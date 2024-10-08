@@ -1,7 +1,7 @@
-package com.example.sensorapp.Controllers;
+package com.example.sensorapp.controllers;
 
-import com.example.sensorapp.Domain.Common.SensorMessage;
-import com.example.sensorapp.Services.MeasurementIngestionService;
+import com.example.sensorapp.domain.common.SensorMessage;
+import com.example.sensorapp.services.MeasurementIngestionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +13,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.Instant;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;

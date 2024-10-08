@@ -1,6 +1,6 @@
-package com.example.sensorapp.Domain.Normalization;
+package com.example.sensorapp.domain.normalization;
 
-import com.example.sensorapp.Domain.Common.SensorMessage;
+import com.example.sensorapp.domain.common.SensorMessage;
 
 import java.util.Arrays;
 

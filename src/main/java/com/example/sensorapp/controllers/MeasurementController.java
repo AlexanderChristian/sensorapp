@@ -1,7 +1,7 @@
-package com.example.sensorapp.Controllers;
+package com.example.sensorapp.controllers;
 
-import com.example.sensorapp.Domain.Common.SensorMessage;
-import com.example.sensorapp.Services.MeasurementIngestionService;
+import com.example.sensorapp.domain.common.SensorMessage;
+import com.example.sensorapp.services.MeasurementIngestionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

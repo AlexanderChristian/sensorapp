@@ -1,4 +1,4 @@
-package com.example.sensorapp.Domain;
+package com.example.sensorapp.domain;
 
 public class Constants {
     public final static String ACCELEROMETER = "accelerometer";

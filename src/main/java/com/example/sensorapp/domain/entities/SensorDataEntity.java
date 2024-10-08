@@ -1,4 +1,4 @@
-package com.example.sensorapp.Domain.Entities;
+package com.example.sensorapp.domain.entities;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;

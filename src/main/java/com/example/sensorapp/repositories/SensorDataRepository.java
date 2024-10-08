@@ -1,7 +1,7 @@
-package com.example.sensorapp.Repositories;
+package com.example.sensorapp.repositories;
 
 
-import com.example.sensorapp.Domain.Entities.SensorDataEntity;
+import com.example.sensorapp.domain.entities.SensorDataEntity;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;
 

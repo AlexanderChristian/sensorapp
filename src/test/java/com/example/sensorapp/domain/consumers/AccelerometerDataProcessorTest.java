@@ -1,7 +1,7 @@
-package com.example.sensorapp.Domain.Consumers;
+package com.example.sensorapp.domain.consumers;
 
-import com.example.sensorapp.Domain.Common.SensorMessage;
-import com.example.sensorapp.Domain.Consumers.Util.SlidingWindowAvg;
+import com.example.sensorapp.domain.common.SensorMessage;
+import com.example.sensorapp.domain.consumers.util.SlidingWindowAvg;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

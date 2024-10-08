@@ -1,9 +1,9 @@
-package com.example.sensorapp.Services;
+package com.example.sensorapp.services;
 
-import com.example.sensorapp.Domain.Common.SensorMessage;
-import com.example.sensorapp.Domain.Consumers.DataProcessorFactory;
-import com.example.sensorapp.Domain.Consumers.DataProcessor;
-import com.example.sensorapp.Domain.Consumers.Util.SlidingWindowAvg;
+import com.example.sensorapp.domain.common.SensorMessage;
+import com.example.sensorapp.domain.consumers.DataProcessorFactory;
+import com.example.sensorapp.domain.consumers.DataProcessor;
+import com.example.sensorapp.domain.consumers.util.SlidingWindowAvg;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

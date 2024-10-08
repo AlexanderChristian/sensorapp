@@ -1,17 +1,17 @@
-package com.example.sensorapp.Domain.Consumers;
+package com.example.sensorapp.domain.consumers;
 
-import com.example.sensorapp.Domain.Common.SensorMessage;
-import com.example.sensorapp.Domain.Consumers.Util.SlidingWindowAvg;
-import com.example.sensorapp.Domain.Consumers.Util.TimestampedAccelerationAvg;
-import com.example.sensorapp.Domain.Normalization.AccelerometerNormalizationStrategy;
-import com.example.sensorapp.Domain.Normalization.NormalizationStrategy;
+import com.example.sensorapp.domain.common.SensorMessage;
+import com.example.sensorapp.domain.consumers.util.SlidingWindowAvg;
+import com.example.sensorapp.domain.consumers.util.TimestampedAccelerationAvg;
+import com.example.sensorapp.domain.normalization.AccelerometerNormalizationStrategy;
+import com.example.sensorapp.domain.normalization.NormalizationStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-import static com.example.sensorapp.Domain.Constants.ACCELEROMETER;
+import static com.example.sensorapp.domain.Constants.ACCELEROMETER;
 
 public class AccelerometerDataProcessor implements DataProcessor {
 
@@ -125,7 +125,6 @@ public class AccelerometerDataProcessor implements DataProcessor {
         Instant start = accelerationWindow.peekFirst().getTimestamp();
 
         Instant end = accelerationWindow.peekLast().getTimestamp();
-
 
         return new SlidingWindowAvg(sensorId, avgX, avgY, avgZ, start, end);
     }
