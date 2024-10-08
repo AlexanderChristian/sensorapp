@@ -20,7 +20,7 @@ public class AccelerometerDataProcessor implements DataProcessor {
     public static final int ONE_MINUTE_MS = 60000;
     private final ConcurrentLinkedDeque<TimestampedAccelerationAvg> accelerationWindow = new ConcurrentLinkedDeque<>();
     private final String sensorId;
-    private long windowDurationMs = ONE_MINUTE_MS;
+    private final long windowDurationMs;
     private final NormalizationStrategy normalizationStrategy = new AccelerometerNormalizationStrategy();
 
     public AccelerometerDataProcessor(String sensorId, int slidingWindowDurationMs) {
@@ -56,11 +56,7 @@ public class AccelerometerDataProcessor implements DataProcessor {
     }
 
     private SensorMessage normalize(SensorMessage message) {
-        if (normalizationStrategy != null) {
-            return normalizationStrategy.normalize(message);
-        } else {
-            return message;
-        }
+        return normalizationStrategy.normalize(message);
     }
 
 

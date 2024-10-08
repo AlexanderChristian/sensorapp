@@ -14,9 +14,11 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Stream;
 
 @Component
 public class ProcessingService {
@@ -77,28 +79,25 @@ public class ProcessingService {
 
 
     private void processSensorQueue(String sensorId, Queue<SensorMessage> queue) {
-        while (!queue.isEmpty()) {
-            SensorMessage message = queue.poll();
-            DataProcessor dataProcessor = sensorToProcessor.computeIfAbsent(sensorId, id -> DataProcessorFactory.getProcessor(message.getSensorId(), message.getDataType(), SLIDING_WINDOW_DURATION_MILLIS));
-
-            dataProcessor.process(message);
-        }
+        Stream.generate(queue::poll)
+                .takeWhile(Objects::nonNull)  // Stop when the queue returns null (queue is empty)
+                .forEach(message -> {
+                    DataProcessor dataProcessor = sensorToProcessor.computeIfAbsent(sensorId,
+                            id -> DataProcessorFactory.getProcessor(message.getSensorId(), message.getDataType(), SLIDING_WINDOW_DURATION_MILLIS));
+                    dataProcessor.process(message);
+                });
     }
 
     @Scheduled(fixedRate = 5000)
     public void outputSensorAverages() {
-        for (Map.Entry<String, DataProcessor> entry : sensorToProcessor.entrySet()) {
-            String sensorId = entry.getKey();
-            DataProcessor dataProcessor = entry.getValue();
+        sensorToProcessor.values().stream()
+                .map(DataProcessor::getAverageAcceleration)
+                .filter(avg -> avg != null && avg.getSensorId() != null && avg.getStart() != null)
+                .forEach(this::outputAverage);
 
-            SlidingWindowAvg averageAcceleration = dataProcessor.getAverageAcceleration();
-
-            if (averageAcceleration != null && averageAcceleration.getSensorId() != null && averageAcceleration.getStart() != null) {
-                outputAverage(averageAcceleration);
-            } else {
-                logger.info("No valid average data for sensor: " + sensorId);
-            }
-        }
+        sensorToProcessor.keySet().stream()
+                .filter(sensorId -> sensorToProcessor.get(sensorId).getAverageAcceleration() == null)
+                .forEach(sensorId -> logger.info("No valid average data for sensor: " + sensorId));
     }
 
     private void outputAverage(SlidingWindowAvg average) {

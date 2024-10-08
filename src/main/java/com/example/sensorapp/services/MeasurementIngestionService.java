@@ -1,6 +1,7 @@
 package com.example.sensorapp.services;
 
 import com.example.sensorapp.domain.common.SensorMessage;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -15,6 +16,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @Component
 public class MeasurementIngestionService {
     private final Logger log = LoggerFactory.getLogger(MeasurementIngestionService.class);
+    @Getter
     private final Map<String, Queue<SensorMessage>> sensorStreams = new ConcurrentHashMap<>();
 
     public void writeMessageToQueues(SensorMessage message) {
@@ -26,17 +28,7 @@ public class MeasurementIngestionService {
     }
 
     public void writeMessagesToQueues(List<SensorMessage> messages) {
-        for (SensorMessage message : messages) {
-            String sensorId = message.getSensorId();
-
-            sensorStreams.computeIfAbsent(sensorId, k -> new ConcurrentLinkedQueue<>());
-
-            sensorStreams.get(sensorId).add(message);
-        }
-    }
-
-    public Map<String, Queue<SensorMessage>> getSensorStreams() {
-        return sensorStreams;
+        messages.forEach(this::writeMessageToQueues);
     }
 
     @Scheduled(fixedRate = 5000)
