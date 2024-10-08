@@ -2,9 +2,11 @@ package com.example.sensorapp.Services;
 
 import com.example.sensorapp.Domain.Common.SensorMessage;
 import com.example.sensorapp.Domain.Consumers.AccelerometerDataProcessor;
-import com.example.sensorapp.Domain.Consumers.AccelerometerNormalizationStrategy;
+import com.example.sensorapp.Domain.Normalization.AccelerometerNormalizationStrategy;
 import com.example.sensorapp.Domain.Consumers.DataProcessor;
 import com.example.sensorapp.Domain.Consumers.Util.SlidingWindowAvg;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -17,6 +19,8 @@ import java.util.concurrent.Executors;
 
 @Component
 public class ProcessingService {
+
+    private final Logger logger = LoggerFactory.getLogger(ProcessingService.class);
     private final MeasurementIngestionService measurementService;
 
     private final ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
@@ -61,14 +65,14 @@ public class ProcessingService {
         SlidingWindowAvg averageAcceleration = dataProcessor.getAverageAcceleration();
 
         if (null == averageAcceleration.getSensorId()){
-            System.out.println("Nothing to persist.");
+            logger.info("Nothing to persist.");
             return;
         }
         outputAverage(averageAcceleration);
     }
 
     private void outputAverage(SlidingWindowAvg average) {
-        System.out.println("Sensor ID: " + average.getSensorId() + " | Average Acceleration: " + average);
+        logger.info("Sensor ID: " + average.getSensorId() + " | Average Acceleration: " + average);
         elasticSearchService.persistAverage(average);
     }
 }

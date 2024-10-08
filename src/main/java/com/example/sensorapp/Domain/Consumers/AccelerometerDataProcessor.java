@@ -3,6 +3,10 @@ package com.example.sensorapp.Domain.Consumers;
 import com.example.sensorapp.Domain.Common.SensorMessage;
 import com.example.sensorapp.Domain.Consumers.Util.SlidingWindowAvg;
 import com.example.sensorapp.Domain.Consumers.Util.TimestampedAccelerationAvg;
+import com.example.sensorapp.Domain.Normalization.NormalizationStrategy;
+import com.example.sensorapp.Services.MeasurementIngestionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -10,6 +14,8 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import static com.example.sensorapp.Domain.Constants.ACCELEROMETER;
 
 public class AccelerometerDataProcessor implements DataProcessor {
+
+    private final Logger log = LoggerFactory.getLogger(AccelerometerDataProcessor.class);
     private final ConcurrentLinkedDeque<TimestampedAccelerationAvg> accelerationWindow = new ConcurrentLinkedDeque<>();
     private long windowDurationMs = 60000; // default, maybe make configurable
     private final NormalizationStrategy normalizationStrategy;
@@ -62,7 +68,7 @@ public class AccelerometerDataProcessor implements DataProcessor {
 
         // If the message timestamp is before the fallback window which uses instant as reference, clear the entire window
         if (createdTime.isBefore(fallbackStartOfTimeWindow)) {
-            System.out.println("Message too old, clearing entire window for sensor: " + sensorId);
+            log.info("Message too old, clearing entire window for sensor: " + sensorId);
             window.clear();
         }
 

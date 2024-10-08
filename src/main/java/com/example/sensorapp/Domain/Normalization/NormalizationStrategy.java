@@ -1,4 +1,4 @@
-package com.example.sensorapp.Domain.Consumers;
+package com.example.sensorapp.Domain.Normalization;
 
 import com.example.sensorapp.Domain.Common.SensorMessage;
 

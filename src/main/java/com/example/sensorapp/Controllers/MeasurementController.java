@@ -13,7 +13,7 @@ import java.util.List;
 @RequestMapping("/api")
 @RestController
 public class MeasurementController {
-    private MeasurementIngestionService measurementService;
+    private final MeasurementIngestionService measurementService;
 
     @Autowired
     public MeasurementController(MeasurementIngestionService measurementService) {
@@ -24,5 +24,11 @@ public class MeasurementController {
     public void receiveData(@RequestBody List<SensorMessage> bulkMessages) {
         measurementService.writeMessagesToQueues(bulkMessages);
     }
+
+    @PostMapping("/measurement")
+    public void receiveData(@RequestBody SensorMessage message) {
+        measurementService.writeMessageToQueues(message);
+    }
+
 
 }

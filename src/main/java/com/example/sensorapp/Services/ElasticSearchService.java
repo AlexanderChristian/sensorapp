@@ -3,13 +3,15 @@ package com.example.sensorapp.Services;
 import com.example.sensorapp.Domain.Consumers.Util.SlidingWindowAvg;
 import com.example.sensorapp.Domain.Entities.SensorDataEntity;
 import com.example.sensorapp.Repositories.SensorDataRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 
 @Component
 public class ElasticSearchService {
-
+    private final Logger log = LoggerFactory.getLogger(ElasticSearchService.class);
     SensorDataRepository sensorDataRepository;
 
     @Autowired
@@ -32,8 +34,7 @@ public class ElasticSearchService {
 
         sensorData.setAvg(persistedAverage);
 
-        // Save to Elasticsearch
         sensorDataRepository.save(sensorData);
-        System.out.println("Persisted to elastic search");
+        log.info("Persisted to elastic search");
     }
 }
