@@ -49,3 +49,8 @@
         Task 27 - Minor refactorings for spacing
         Task 28 - Add lombok
         Task 29 - Add more streams
+        Task 30 - Add possibility for batch processing to fix bottleneck. Remove stream due to extra overhead.
+        Task 31 - Add backpressure mechanism via LinkedBlockingQueue.
+        Task 32 - Fix redundant saves within elasticsearch
+        Task 33 - Add Controller Advice handling
+        Task 34 - Fix concurrent modification exception due to stream

@@ -1,7 +1,6 @@
 package com.example.sensorapp.controllers;
 
 import com.example.sensorapp.domain.common.SensorMessage;
-import com.example.sensorapp.exceptions.CapacityExceededException;
 import com.example.sensorapp.services.MeasurementIngestionService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -29,36 +28,15 @@ public class MeasurementController {
 
     @PostMapping("/measurements")
     public ResponseEntity<String> receiveData(@RequestBody List<@Valid SensorMessage> bulkMessages) {
-        try {
-            measurementService.writeMessagesToQueues(bulkMessages);
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body("Messages successfully processed");
-        } catch (CapacityExceededException e) {
-            logger.error("Queue capacity exceeded: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("Queue is full, try again later");
-        } catch (IllegalArgumentException e) {
-            logger.error("Invalid data received: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid sensor message data");
-        } catch (Exception e) {
-            logger.error("Error processing messages: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error processing messages");
-        }
+        measurementService.writeMessagesToQueues(bulkMessages);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body("Messages successfully processed");
+
     }
 
     @PostMapping("/measurement")
     public ResponseEntity<String> receiveData(@RequestBody @Valid SensorMessage message) {
-        try {
-            measurementService.writeMessagesToQueues(List.of(message));
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body("Message successfully processed");
-        } catch (CapacityExceededException e) {
-            logger.error("Queue capacity exceeded: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("Queue is full, try again later");
-        } catch (IllegalArgumentException e) {
-            logger.error("Invalid data received: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid sensor message data");
-        } catch (Exception e) {
-            logger.error("Error processing messages: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error processing messages");
-        }
+        measurementService.writeMessagesToQueues(List.of(message));
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body("Message successfully processed");
     }
 
 }
