@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Stream;
 
 @Component
 public class ProcessingService {
@@ -92,10 +91,15 @@ public class ProcessingService {
 
     @Scheduled(fixedRate = 5000)
     public void outputSensorAverages() {
-        sensorToProcessor.values().stream()
-                .map(DataProcessor::getAverageAcceleration)
-                .filter(avg -> avg != null && avg.getSensorId() != null && avg.getStart() != null)
-                .forEach(this::outputAverage);
+        //this can throw concurrent modification exception rarely with streams, using forEach instead for thread safety.
+        sensorToProcessor.forEach((sensorId, dataProcessor) -> {
+                    SlidingWindowAvg avg = dataProcessor.getAverageAcceleration();
+                    if (avg != null && avg.getSensorId() != null && avg.getStart() != null) {
+                        outputAverage(avg);
+                    } else {
+                        logger.info("No valid average data for sensor: " + sensorId);
+                    }
+                });
 
         sensorToProcessor.keySet().stream()
                 .filter(sensorId -> sensorToProcessor.get(sensorId).getAverageAcceleration() == null)
