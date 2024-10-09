@@ -10,5 +10,4 @@ COPY target/consumer-app-v1.jar /app/consumer-app-v1.jar
 # Expose the port on which the consumer runs
 EXPOSE 8090
 
-# Run the consumer application
-ENTRYPOINT ["java", "-jar", "/app/consumer-app-v1.jar"]
+ENTRYPOINT ["java", "-jar", "/app/consumer-app-v1.jar", "--spring.profiles.active=dev"]

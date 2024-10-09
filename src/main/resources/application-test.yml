@@ -1,0 +1,10 @@
+spring:
+  elasticsearch:
+    enabled: false
+
+sensor:
+  processing:
+    sliding-window-duration-millis: 60000
+    sleep-duration-millis: 1000
+    message-processing-batch-size: 1000
+    writing-queue-capacity: 9000

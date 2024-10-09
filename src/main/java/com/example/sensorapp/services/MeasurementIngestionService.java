@@ -5,6 +5,7 @@ import com.example.sensorapp.exceptions.CapacityExceededException;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -21,7 +22,9 @@ public class MeasurementIngestionService {
     @Getter
     private final Map<String, Queue<SensorMessage>> sensorStreams = new ConcurrentHashMap<>();
     @Value("${sensor.processing.writing-queue-capacity}")
+    @Autowired
     private int QUEUE_CAPACITY = 8000;
+
 
     public void writeMessageToQueues(SensorMessage message) {
         String sensorId = message.getSensorId();
@@ -40,7 +43,7 @@ public class MeasurementIngestionService {
     }
 
     @Scheduled(fixedRate = 5000)
-    private void monitorSizeOfStreams() {
+    public void monitorSizeOfStreams() {
         sensorStreams.forEach((key, value) -> log.info("Queue for sensor: " + key + " has size " + value.size()));
     }
 }

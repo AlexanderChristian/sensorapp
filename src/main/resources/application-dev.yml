@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: consumer-app
+  jmx:
+    enabled: true
+  elasticsearch:
+    uris: http://localhost:9200

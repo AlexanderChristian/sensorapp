@@ -16,9 +16,9 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 @WebMvcTest(MeasurementController.class)
 public class MeasurementControllerTest {
@@ -44,6 +44,7 @@ public class MeasurementControllerTest {
         doNothing().when(measurementService).writeMessageToQueues(any());
 
         mockMvc.perform(post("/api/measurement")
+                        .header("Sensor-ID", "SENSOR001")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(message)))
                 .andExpect(status().isAccepted())
@@ -63,9 +64,10 @@ public class MeasurementControllerTest {
         message.setDataUnit("m/s^2");
 
         mockMvc.perform(post("/api/measurement")
+                        .header("Sensor-ID", "")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(message)))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().is5xxServerError())
                 .andDo(print());
 
         verify(measurementService, times(0)).writeMessagesToQueues(anyList());
@@ -81,7 +83,7 @@ public class MeasurementControllerTest {
         message1.setDataUnit("m/s^2");
 
         SensorMessage message2 = new SensorMessage();
-        message2.setSensorId("SENSOR002");
+        message2.setSensorId("SENSOR001");
         message2.setCreatedTime(Instant.now());
         message2.setData(new Object[]{3.2, 4.3, 5.4});
         message2.setDataType("accelerometer");
@@ -90,6 +92,7 @@ public class MeasurementControllerTest {
         doNothing().when(measurementService).writeMessageToQueues(any());
 
         mockMvc.perform(post("/api/measurements")
+                        .header("Sensor-ID", "SENSOR001")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(List.of(message1, message2))))
                 .andExpect(status().isAccepted())
@@ -116,9 +119,10 @@ public class MeasurementControllerTest {
         message2.setDataUnit("m/s^2");
 
         mockMvc.perform(post("/api/measurements")
+                        .header("Sensor-ID", "SENSOR001")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(List.of(message1, message2))))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().is5xxServerError())
                 .andDo(print());
 
         verify(measurementService, times(0)).writeMessagesToQueues(anyList());

@@ -55,3 +55,4 @@
         Task 33 - Add Controller Advice handling
         Task 34 - Fix concurrent modification exception due to stream
         Task 35 - Separate data structures for processing and for outputting
+        Task 36 - Split configs using profiles, change to yaml, modify dockerfile to accept dev. Add lombok to pom to fix errors when packaging.
