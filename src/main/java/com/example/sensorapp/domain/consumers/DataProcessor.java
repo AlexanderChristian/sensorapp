@@ -12,4 +12,6 @@ public interface DataProcessor {
     void processBatch(List<SensorMessage> batch);
 
     SlidingWindowAvg getAverageAcceleration();
+
+    String getSensorId();
 }

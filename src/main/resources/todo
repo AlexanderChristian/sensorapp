@@ -54,3 +54,4 @@
         Task 32 - Fix redundant saves within elasticsearch
         Task 33 - Add Controller Advice handling
         Task 34 - Fix concurrent modification exception due to stream
+        Task 35 - Separate data structures for processing and for outputting

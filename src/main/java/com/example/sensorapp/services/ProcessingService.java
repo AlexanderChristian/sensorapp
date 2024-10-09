@@ -20,6 +20,7 @@ import java.util.concurrent.Executors;
 public class ProcessingService {
 
     private final Map<String, DataProcessor> sensorToProcessor = new HashMap<>();
+    private final Map<DataProcessor, SlidingWindowAvg> processorToAverage = new HashMap<>();
     private final ExecutorService executor = Executors.newCachedThreadPool();
     private final ExecutorService mainProcessingThreadExecutor = Executors.newSingleThreadExecutor();
     private final MeasurementIngestionService measurementService;
@@ -75,6 +76,7 @@ public class ProcessingService {
             List<SensorMessage> batch = new ArrayList<>();
             for (int i = 0; i < MESSAGE_PROCESSING_BATCH_SIZE && !queue.isEmpty(); i++) {
                 SensorMessage message = queue.poll();
+
                 if (message != null) {
                     batch.add(message);
                 }
@@ -83,26 +85,29 @@ public class ProcessingService {
             if (!batch.isEmpty()) {
                 DataProcessor dataProcessor = sensorToProcessor.computeIfAbsent(sensorId,
                         id -> DataProcessorFactory.getProcessor(sensorId, batch.get(0).getDataType(), SLIDING_WINDOW_DURATION_MILLIS));
-
                 dataProcessor.processBatch(batch);
+                //Add the processor to our new map that separates the processing queue from the average calculation
+                processorToAverage.putIfAbsent(dataProcessor, new SlidingWindowAvg());
             }
         }
     }
 
     @Scheduled(fixedRate = 5000)
     public void outputSensorAverages() {
-        //this can throw concurrent modification exception rarely with streams, using forEach instead for thread safety.
-        sensorToProcessor.forEach((sensorId, dataProcessor) -> {
-                    SlidingWindowAvg avg = dataProcessor.getAverageAcceleration();
-                    if (avg != null && avg.getSensorId() != null && avg.getStart() != null) {
-                        outputAverage(avg);
-                    } else {
-                        logger.info("No valid average data for sensor: " + sensorId);
-                    }
-                });
+        //Streams here can throw concurrent modification exceptions rarely, using forEach instead for thread safety.
+        //Separated the data structures as well, now we have a separate map for processor -> average
+        processorToAverage.forEach((processor, oldAvg) -> {
+            SlidingWindowAvg newAvg = processor.getAverageAcceleration();
+            processorToAverage.put(processor, newAvg);
+            if (newAvg != null && newAvg.getSensorId() != null && newAvg.getStart() != null) {
+                outputAverage(newAvg);
+            } else {
+                logger.info("No valid average data for sensor: " + processor.getSensorId());
+            }
+        });
 
-        sensorToProcessor.keySet().stream()
-                .filter(sensorId -> sensorToProcessor.get(sensorId).getAverageAcceleration() == null)
+        processorToAverage.keySet().stream()
+                .filter(processorToAvg -> processorToAvg.getAverageAcceleration() == null)
                 .forEach(sensorId -> logger.info("No valid average data for sensor: " + sensorId));
     }
 

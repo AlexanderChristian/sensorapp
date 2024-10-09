@@ -5,6 +5,7 @@ import com.example.sensorapp.domain.consumers.util.SlidingWindowAvg;
 import com.example.sensorapp.domain.consumers.util.TimestampedAccelerationAvg;
 import com.example.sensorapp.domain.normalization.AccelerometerNormalizationStrategy;
 import com.example.sensorapp.domain.normalization.NormalizationStrategy;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +16,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
 import static com.example.sensorapp.domain.Constants.ACCELEROMETER;
 
+@Getter
 public class AccelerometerDataProcessor implements DataProcessor {
 
     private final Logger log = LoggerFactory.getLogger(AccelerometerDataProcessor.class);
@@ -121,6 +123,4 @@ public class AccelerometerDataProcessor implements DataProcessor {
                 start.orElse(null),
                 end.orElse(null));
     }
-
-
 }
