@@ -20,8 +20,14 @@ public class ElasticSearchService {
     }
 
     public void persistAverage(SlidingWindowAvg slidingAverage) {
+
+        String compoundId = slidingAverage.getSensorId() + "_" + slidingAverage.getStart().toString();
+        if (sensorDataRepository.existsById(compoundId)) {
+            log.info("Skipping " + compoundId + " it has been saved previously.");
+            return ;
+        }
         SensorDataEntity sensorData = SensorDataEntity.builder()
-                .id(slidingAverage.getSensorId() + "_" + slidingAverage.getStart().toString())
+                .id(compoundId)
                 .sensorId(slidingAverage.getSensorId())
                 .start(slidingAverage.getStart().toString())
                 .end(slidingAverage.getEnd().toString())

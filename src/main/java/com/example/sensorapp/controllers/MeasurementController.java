@@ -1,14 +1,14 @@
 package com.example.sensorapp.controllers;
 
 import com.example.sensorapp.domain.common.SensorMessage;
+import com.example.sensorapp.exceptions.CapacityExceededException;
 import com.example.sensorapp.services.MeasurementIngestionService;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import jakarta.validation.Valid;
-
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,6 +32,9 @@ public class MeasurementController {
         try {
             measurementService.writeMessagesToQueues(bulkMessages);
             return ResponseEntity.status(HttpStatus.ACCEPTED).body("Messages successfully processed");
+        } catch (CapacityExceededException e) {
+            logger.error("Queue capacity exceeded: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("Queue is full, try again later");
         } catch (IllegalArgumentException e) {
             logger.error("Invalid data received: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid sensor message data");
@@ -46,6 +49,9 @@ public class MeasurementController {
         try {
             measurementService.writeMessagesToQueues(List.of(message));
             return ResponseEntity.status(HttpStatus.ACCEPTED).body("Message successfully processed");
+        } catch (CapacityExceededException e) {
+            logger.error("Queue capacity exceeded: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("Queue is full, try again later");
         } catch (IllegalArgumentException e) {
             logger.error("Invalid data received: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid sensor message data");

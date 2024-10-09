@@ -18,7 +18,6 @@ import static com.example.sensorapp.domain.Constants.ACCELEROMETER;
 public class AccelerometerDataProcessor implements DataProcessor {
 
     private final Logger log = LoggerFactory.getLogger(AccelerometerDataProcessor.class);
-    public static final int ONE_MINUTE_MS = 60000;
     private final ConcurrentLinkedDeque<TimestampedAccelerationAvg> accelerationWindow = new ConcurrentLinkedDeque<>();
     private final String sensorId;
     private final long windowDurationMs;
@@ -99,7 +98,6 @@ public class AccelerometerDataProcessor implements DataProcessor {
         deleteElementsOutsideWindow(sensorId, last.timestamp());
 
         if (accelerationWindow.isEmpty()) {
-            log.info("Empty acceleration window for: " + sensorId);
             return new SlidingWindowAvg();
         }
 
